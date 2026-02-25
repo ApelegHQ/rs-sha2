@@ -13,29 +13,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { copyFile } from 'node:fs/promises';
-import { basename, join } from 'node:path';
-import { DIST_DIR, RESOURCES_DIR } from './config.js';
+const baseName = '@apeleghq/sha2' as const;
 
-/** Static files to copy verbatim into the distribution directory. */
-const ASSETS = [
-	'types.d.cts',
-	'types.d.mts',
-	'README.md',
-	'../../LICENSE',
-] as const;
+const getSha2Instance = async (namedExport?: string) => {
+	const importName = `${baseName}${namedExport ? `/${namedExport}` : ''}`;
+	const sha2: ReturnType<typeof eval> = await (
+		await import(importName)
+	).default();
 
-/**
- * Copy static assets from the source directory into the dist directory.
- */
-export async function copyAssets(): Promise<void> {
-	await Promise.all(
-		ASSETS.map((file) => {
-			const src = join(RESOURCES_DIR, file);
-			// const dest = join(DIST_DIR, resolve(sep, file));
-			const dest = join(DIST_DIR, basename(file));
+	return sha2;
+};
 
-			return copyFile(src, dest);
-		}),
-	);
-}
+export default getSha2Instance;

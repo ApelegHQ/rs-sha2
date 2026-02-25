@@ -14,15 +14,17 @@
  */
 
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { DIST_DIR, PACKAGE_DIR, SCRIPTS_DIR } from './config.js';
-import { ensureDir, exec, execInherit } from './exec.js';
+import { ensureDir, execInherit } from './exec.js';
+import npm from './npm.js';
 
 const HARNESS_DIR = join(PACKAGE_DIR, '.test-harness');
 const TESTS_SRC = join(PACKAGE_DIR, 'tests');
 
 async function main(): Promise<void> {
-	const loader = join(PACKAGE_DIR, './loader.mjs');
+	const loader = pathToFileURL(join(PACKAGE_DIR, './loader.mjs')).toString();
 
 	// ---- 1. Build the package ------------------------------------------------
 	console.log('\n▸ Building package …\n');
@@ -32,7 +34,7 @@ async function main(): Promise<void> {
 		await execInherit(process.argv[0], [
 			'--import',
 			loader,
-			join(SCRIPTS_DIR, 'build.ts'),
+			relative(process.cwd(), join(SCRIPTS_DIR, 'build.ts')),
 		]);
 	}
 
@@ -48,8 +50,7 @@ async function main(): Promise<void> {
 	await ensureDir(HARNESS_DIR);
 
 	// 3a. Pack dist/ into a tarball
-	const { stdout: packOut } = await exec(
-		'npm',
+	const { stdout: packOut } = await npm(
 		['pack', '--pack-destination', HARNESS_DIR],
 		{ cwd: DIST_DIR },
 	);
@@ -67,6 +68,7 @@ async function main(): Promise<void> {
 				type: 'module',
 				dependencies: {
 					[distPkg.name]: `./${tgzFilename}`,
+					'@types/node': '25.3.0',
 				},
 			},
 			null,
@@ -76,7 +78,7 @@ async function main(): Promise<void> {
 
 	// 3c. npm install inside the harness
 	console.log('  Running npm install …');
-	await exec('npm', ['install'], { cwd: HARNESS_DIR });
+	await npm(['install'], { cwd: HARNESS_DIR });
 
 	// 3d. Copy test sources + vector files
 	console.log('  Copying tests …');

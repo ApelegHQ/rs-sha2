@@ -31,10 +31,10 @@ export interface IWasmJsResult {
  */
 export async function convertWasmToJs(
 	wasmPath: string,
-	IFeatureSet: IFeatureSet,
+	featureSet: IFeatureSet,
 ): Promise<IWasmJsResult> {
-	const wasmJsPath = join(BUILD_DIR, `${IFeatureSet.slug}.wasm.mjs`);
-	const symbolsPath = join(BUILD_DIR, `${IFeatureSet.slug}.symbols.json`);
+	const wasmJsPath = join(BUILD_DIR, `${featureSet.slug}.wasm.mjs`);
+	const symbolsPath = join(BUILD_DIR, `${featureSet.slug}.symbols.json`);
 
 	// --- run wasm2js -----------------------------------------------------------
 	await exec(WASM2JS_BIN, [

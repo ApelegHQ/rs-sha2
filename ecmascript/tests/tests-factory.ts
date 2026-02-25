@@ -14,6 +14,7 @@
  */
 
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { describe, test } from 'node:test';
 import { type ITestVector } from './parse-vectors.js';
 
@@ -21,10 +22,12 @@ const testsFactory = (
 	family: string,
 	getInstance: () => ReturnType<typeof eval>,
 	desc: string,
-	vectors: ITestVector[],
+	vectorsCallback: () => Promise<ITestVector[]>,
 	skip?: boolean,
 ) => {
-	describe(`[${family}] ${desc}`, { skip }, () => {
+	describe(`[${family}] ${desc}`, { skip }, async () => {
+		const vectors = await vectorsCallback();
+
 		// ---------------------------------------------------------------------------
 		describe('One-shot digest', () => {
 			for (const v of vectors) {

@@ -14,16 +14,16 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-type SerializeType = (scrub?: boolean) => ArrayBuffer;
+type SerializeType = (scrub?: boolean) => ArrayBufferLike;
 export type HashInstance = {
 	/**
 	 * Feeds data into the running hash. May be called multiple times.
 	 */
-	update: (data: ArrayBuffer | ArrayBufferView, scrub?: boolean) => void;
+	update: (data: ArrayBufferLike | ArrayBufferView, scrub?: boolean) => void;
 	/**
 	 * Completes the hash computation and returns the digest.
 	 */
-	finalize: (scrub?: boolean) => ArrayBuffer;
+	finalize: (scrub?: boolean) => ArrayBufferLike;
 	/**
 	 * Resets the hash back to its initial state (clears streaming mode).
 	 */
@@ -33,9 +33,9 @@ export type HashInstance = {
 	 * call.  Throws if the instance is already in streaming mode.
 	 */
 	digest: (
-		data: ArrayBuffer | ArrayBufferView,
+		data: ArrayBufferLike | ArrayBufferView,
 		scrub?: boolean,
-	) => ArrayBuffer;
+	) => ArrayBufferLike;
 };
 export type SerializableHashInstance = HashInstance & {
 	/**
@@ -58,7 +58,7 @@ export type SerializableHashInstanceConstructor =
  * Creates a new hash instance resuming from previously serialised state.
  */
 export type HashInstanceDeserializer = (
-	serializedData: ArrayBuffer | ArrayBufferView | null,
+	serializedData: ArrayBufferLike | ArrayBufferView | null,
 	scrub?: boolean,
 ) => HashInstance;
 /**
@@ -66,7 +66,7 @@ export type HashInstanceDeserializer = (
  * serialised state.
  */
 export type SerializableHashInstanceDeserializer = (
-	serializedData: ArrayBuffer | ArrayBufferView | null,
+	serializedData: ArrayBufferLike | ArrayBufferView | null,
 	scrub?: boolean,
 ) => SerializableHashInstance;
 export type HashInstanceDeserializingConstructor = HashInstanceConstructor &

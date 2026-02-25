@@ -13,13 +13,11 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+import getSha2Instance from './get-sha2-instance.js';
 import loadVectors from './load-vectors.js';
 import testsFactory from './tests-factory.js';
 
-// Initialise the library once (top-level await is fine in ESM).
-const sha2: ReturnType<typeof eval> = await (
-	await import('@apeleghq/sha2' as string)
-).default();
+const sha2 = await getSha2Instance();
 
 const skip = !sha2.sha512;
 const getInstance = () => sha2.sha512();

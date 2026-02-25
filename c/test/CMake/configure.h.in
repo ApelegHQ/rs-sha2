@@ -1,0 +1,2 @@
+#cmakedefine HAVE_UNISTD_H "@HAVE_UNISTD_H@"
+#cmakedefine HAVE_GETLINE "@HAVE_GETLINE@"

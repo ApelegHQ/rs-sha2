@@ -13,16 +13,16 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { readFileSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseVectorFile } from './parse-vectors.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const loadVectors = (rspName: string) => {
+const loadVectors = (rspName: string) => async () => {
 	const { vectors } = parseVectorFile(
-		readFileSync(join(__dirname, 'vectors', rspName), 'utf-8'),
+		await readFile(join(__dirname, 'vectors', rspName), 'utf-8'),
 	);
 
 	return vectors;

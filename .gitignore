@@ -311,3 +311,4 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/emacs,grunt,kate,linux,macos,node,notepadpp,sublimetext,vim,visualstudiocode,windows
 
 build
+target

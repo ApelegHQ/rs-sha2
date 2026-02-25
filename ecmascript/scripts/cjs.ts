@@ -52,22 +52,18 @@ const UMD_FOOTER = [
  *  2. Minify with Closure Compiler.
  */
 export async function buildCjs(
-	IFeatureSet: IFeatureSet,
+	featureSet: IFeatureSet,
 	wrappedJsPath: string,
 ): Promise<string> {
 	const intermediaryPath = join(
 		BUILD_DIR,
-		`${IFeatureSet.slug}.intermediary.cjs`,
+		`${featureSet.slug}.intermediary.cjs`,
 	);
-	const outputPath = join(DIST_DIR, `${IFeatureSet.slug}.cjs`);
+	const outputPath = join(DIST_DIR, `${featureSet.slug}.cjs`);
 
 	const source = await readFile(wrappedJsPath, 'utf-8');
-	const lines = source.split('\n');
+	const wrapped = [UMD_HEADER, source, UMD_FOOTER].join('\n');
 
-	// sed '1a …' inserts after line 1; '$a …' appends after the last line
-	const wrapped = [lines[0], UMD_HEADER, ...lines.slice(1), UMD_FOOTER].join(
-		'\n',
-	);
 	await writeFile(intermediaryPath, wrapped, 'utf-8');
 
 	await runClosureCompiler(intermediaryPath, outputPath);

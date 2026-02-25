@@ -16,6 +16,11 @@
 import { execFile, spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 
+export interface IExecOptions {
+	cwd?: string;
+	env?: Record<string, string>;
+}
+
 export interface IExecResult {
 	stdout: string;
 	stderr: string;
@@ -28,7 +33,7 @@ export interface IExecResult {
 export function exec(
 	command: string,
 	args: string[],
-	options?: { cwd?: string; env?: Record<string, string> },
+	options?: IExecOptions,
 ): Promise<IExecResult> {
 	return new Promise((resolve, reject) => {
 		execFile(

@@ -29,24 +29,18 @@ const ESM_FOOTER = `;if(typeof exports==="undefined")exports=DEFAULT_EXPORT`;
  *  3. Post-process: hoist an `exports` binding and append a default export.
  */
 export async function buildEsm(
-	IFeatureSet: IFeatureSet,
+	featureSet: IFeatureSet,
 	wrappedJsPath: string,
 ): Promise<string> {
 	const intermediaryPath = join(
 		BUILD_DIR,
-		`${IFeatureSet.slug}.intermediary.mjs`,
+		`${featureSet.slug}.intermediary.mjs`,
 	);
-	const outputPath = join(DIST_DIR, `${IFeatureSet.slug}.mjs`);
+	const outputPath = join(DIST_DIR, `${featureSet.slug}.mjs`);
 
 	/* ---- wrap ---- */
 	const source = await readFile(wrappedJsPath, 'utf-8');
-	const srcLines = source.split('\n');
-	const wrapped = [
-		srcLines[0],
-		ESM_HEADER,
-		...srcLines.slice(1),
-		ESM_FOOTER,
-	].join('\n');
+	const wrapped = [ESM_HEADER, source, ESM_FOOTER].join('\n');
 	await writeFile(intermediaryPath, wrapped, 'utf-8');
 
 	/* ---- minify ---- */
@@ -54,21 +48,15 @@ export async function buildEsm(
 
 	/* ---- post-process ---- */
 	const minified = await readFile(outputPath, 'utf-8');
-	const lines = minified.split('\n');
-
-	// Strip trailing empty lines left over from split()
-	while (lines.length > 1 && lines[lines.length - 1] === '') {
-		lines.pop();
-	}
 
 	// Prepend `var exports;` to the very first line
-	lines[0] = 'var exports;' + lines[0];
+	// Append `;export default exports;` to the very last line
+	const finalText = [
+		'var exports;',
+		minified.replace(/;*$/, ';export default exports;'),
+	].join('');
 
-	// On the last line, replace any trailing semicolons with the default export
-	const last = lines.length - 1;
-	lines[last] = lines[last].replace(/;*$/, ';export default exports;');
-
-	await writeFile(outputPath, lines.join('\n') + '\n', 'utf-8');
+	await writeFile(outputPath, finalText, 'utf-8');
 
 	return outputPath;
 }

@@ -26,24 +26,24 @@ import { generatePackageJson } from './package-json.js';
 import { convertWasmToJs } from './wasm2js.js';
 
 /** Run every build step for a single feature combination. */
-async function buildVariant(IFeatureSet: IFeatureSet): Promise<void> {
+async function buildVariant(featureSet: IFeatureSet): Promise<void> {
 	console.log('  Compiling Rust → WASM …');
-	const wasmPath = await buildCargo(IFeatureSet);
+	const wasmPath = await buildCargo(featureSet);
 
 	console.log('  Converting WASM → JS …');
-	const { wasmJsPath } = await convertWasmToJs(wasmPath, IFeatureSet);
+	const { wasmJsPath } = await convertWasmToJs(wasmPath, featureSet);
 
 	console.log('  Bundling & formatting …');
-	const wrappedPath = await bundleWrapper(IFeatureSet, wasmJsPath);
+	const wrappedPath = await bundleWrapper(featureSet, wasmJsPath);
 
 	console.log('  Building CJS + ESM outputs …');
 	await Promise.all([
-		buildCjs(IFeatureSet, wrappedPath),
-		buildEsm(IFeatureSet, wrappedPath),
+		buildCjs(featureSet, wrappedPath),
+		buildEsm(featureSet, wrappedPath),
 	]);
 
 	console.log('  Generating type declarations …');
-	await generateDeclarations(IFeatureSet);
+	await generateDeclarations(featureSet);
 }
 
 async function main(): Promise<void> {

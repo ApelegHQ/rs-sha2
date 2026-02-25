@@ -23,18 +23,18 @@ import type { IFeatureSet } from './features.js';
  * `%types%` placeholder in the corresponding `.in` templates.
  */
 export async function generateDeclarations(
-	IFeatureSet: IFeatureSet,
+	featureSet: IFeatureSet,
 ): Promise<void> {
 	await Promise.all([
 		renderTemplate(
 			join(RESOURCES_DIR, 'index.d.cts.in'),
-			join(DIST_DIR, `${IFeatureSet.slug}.d.cts`),
-			IFeatureSet.typeUnion,
+			join(DIST_DIR, `${featureSet.slug}.d.cts`),
+			featureSet.typeUnion,
 		),
 		renderTemplate(
 			join(RESOURCES_DIR, 'index.d.mts.in'),
-			join(DIST_DIR, `${IFeatureSet.slug}.d.mts`),
-			IFeatureSet.typeUnion,
+			join(DIST_DIR, `${featureSet.slug}.d.mts`),
+			featureSet.typeUnion,
 		),
 	]);
 }

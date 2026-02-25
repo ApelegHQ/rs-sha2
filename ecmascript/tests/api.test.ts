@@ -13,16 +13,13 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
+import { describe, test } from 'node:test';
+import getSha2Instance from './get-sha2-instance.js';
 import { hexToBytes } from './helpers.js';
 
-type TAny = ReturnType<typeof eval>;
-
-// Default import = the most-featured variant (sha256+sha384+deserialize+serialize+streaming)
-const sha2: ReturnType<typeof eval> = await (
-	await import('@apeleghq/sha2' as string)
-).default();
+const sha2 = await getSha2Instance();
 
 // ---------------------------------------------------------------------------
 describe('API shape', () => {
@@ -53,8 +50,8 @@ describe('reset behaviour', () => {
 
 	test('digest can be called repeatedly (implicit reset)', () => {
 		const h = sha2.sha256();
-		const d1 = h.digest(msg);
-		const d2 = h.digest(msg);
+		const d1 = h.digest(msg, false);
+		const d2 = h.digest(msg, true);
 		assert.deepStrictEqual(Buffer.from(d1), Buffer.from(expected));
 		assert.deepStrictEqual(Buffer.from(d2), Buffer.from(expected));
 	});
@@ -91,41 +88,31 @@ describe('empty message', () => {
 // package.json `exports` map entries resolve correctly.
 describe('sub-path imports', () => {
 	test('sha256+streaming has sha256 but not sha384', async () => {
-		const fac: TAny = await (
-			await import('@apeleghq/sha2/sha256+streaming' as string)
-		).default();
+		const fac = await getSha2Instance('sha256+streaming');
 		assert.equal(typeof fac.sha256, 'function');
 		assert.equal(fac.sha384, undefined);
 	});
 
 	test('sha384+streaming has sha384 but not sha256', async () => {
-		const fac: TAny = await (
-			await import('@apeleghq/sha2/sha384+streaming' as string)
-		).default();
+		const fac = await getSha2Instance('sha384+streaming');
 		assert.equal(typeof fac.sha384, 'function');
 		assert.equal(fac.sha256, undefined);
 	});
 
 	test('sha256+sha384+streaming has both algorithms', async () => {
-		const fac: TAny = await (
-			await import('@apeleghq/sha2/sha256+sha384+streaming' as string)
-		).default();
+		const fac = await getSha2Instance('sha256+sha384+streaming');
 		assert.equal(typeof fac.sha256, 'function');
 		assert.equal(typeof fac.sha384, 'function');
 	});
 
 	test('non-serialize variant does not expose serialize()', async () => {
-		const fac: TAny = await (
-			await import('@apeleghq/sha2/sha256+streaming' as string)
-		).default();
+		const fac = await getSha2Instance('sha256+streaming');
 		const h = fac.sha256();
 		assert.equal(typeof h.serialize, 'undefined');
 	});
 
 	test('sub-path variant produces the correct digest', async () => {
-		const fac: TAny = await (
-			await import('@apeleghq/sha2/sha256+streaming' as string)
-		).default();
+		const fac = await getSha2Instance('sha256+streaming');
 		const digest = fac.sha256().digest(hexToBytes('d3'));
 		assert.deepStrictEqual(
 			Buffer.from(digest),

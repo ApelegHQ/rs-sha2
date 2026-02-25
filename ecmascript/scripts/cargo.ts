@@ -22,8 +22,8 @@ import type { IFeatureSet } from './features.js';
  * Compile the Rust crate to a WASM binary via Cargo.
  * @returns Absolute path to the produced `.wasm` artefact.
  */
-export async function buildCargo(IFeatureSet: IFeatureSet): Promise<string> {
-	const cargoTargetDir = join(BUILD_DIR, IFeatureSet.slug);
+export async function buildCargo(featureSet: IFeatureSet): Promise<string> {
+	const cargoTargetDir = join(BUILD_DIR, featureSet.slug);
 
 	const rustflags = [
 		process.env.RUSTFLAGS,
@@ -51,7 +51,7 @@ export async function buildCargo(IFeatureSet: IFeatureSet): Promise<string> {
 			cargoTargetDir,
 			'--no-default-features',
 			'--features',
-			IFeatureSet.features.join(','),
+			featureSet.features.join(','),
 		],
 		{
 			cwd: WORKSPACE_DIR,

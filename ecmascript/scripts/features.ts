@@ -34,7 +34,7 @@ const algoRegex = /^sha\d+/;
 function makeIFeatureSet(raw: Feature[]): IFeatureSet {
 	const sorted = [...new Set(raw)].sort((a, b) => {
 		if (a.match(algoRegex) && !b.match(algoRegex)) return -1;
-		if (!a.match(algoRegex) && a.match(algoRegex)) return 1;
+		if (!a.match(algoRegex) && b.match(algoRegex)) return 1;
 		if (a < b) return -1;
 		if (a > b) return 1;
 		return 0;
@@ -47,51 +47,86 @@ function makeIFeatureSet(raw: Feature[]): IFeatureSet {
 }
 
 /**
+ * Computes the cartesian product across feature dimensions.
+ *
+ * Each "dimension" is an array of mutually exclusive options, where each
+ * option is itself a list of features.  The result contains every possible
+ * pick-one-from-each-dimension combination, with the selected options
+ * concatenated.
+ */
+function cartesian(dimensions: Feature[][][]): Feature[][] {
+	return dimensions.reduce<Feature[][]>(
+		(acc, dimension) =>
+			acc.flatMap((prev) =>
+				dimension.map((option) => [...prev, ...option]),
+			),
+		[[]],
+	);
+}
+
+/**
+ * Parse the `FEATURES` environment variable into a set of feature names.
+ *
+ * Returns `null` when the variable is unset or empty, which signals that
+ * all features should participate in the combinatorial matrix (full build).
+ */
+function parseFeaturesEnv(): Set<Feature> | null {
+	const raw = process.env.FEATURES;
+	if (!raw) return null;
+	const features = raw
+		.split(',')
+		.map((s) => s.trim())
+		.filter(Boolean) as Feature[];
+	return features.length > 0 ? new Set(features) : null;
+}
+
+/** All known algorithm features. */
+const allAlgorithms: Feature[] = [
+	'sha224',
+	'sha256',
+	'sha384',
+	'sha512',
+	'sha512_256',
+];
+
+/**
  * Enumerate every feature combination that should be built.
  *
- * The nested loops mirror the original shell script.
- * Commented-out algorithm variants can be re-enabled by uncommenting.
+ * Feature selection is driven by the `FEATURES` environment variable.
+ * When set it should contain a comma-separated list of features that
+ * participate in the combinatorial matrix (e.g. `FEATURES=sha256,sha384`).
+ * When unset every known feature is included (full build).
+ *
+ * Special rules:
+ * - **Serialization / deserialization** are treated as a single unit.
+ *   The dimension is only active when *both* `serialize` and
+ *   `deserialize` appear in `FEATURES` (or when `FEATURES` is unset).
+ * - **Streaming** is always enabled and does not need to be listed.
  */
 export function generateFeatureCombinations(): IFeatureSet[] {
-	const results: IFeatureSet[] = [];
+	const envFeatures = parseFeaturesEnv();
 
-	const quickBuild = !!process.env.QUICK_BUILD;
+	// ── Algorithm dimensions ─────────────────────────────────────────
+	// An algorithm participates in the matrix (present/absent) when it
+	// appears in `FEATURES`, or when no override is given.
+	const algoDimensions: Feature[][][] = allAlgorithms.map((algo) => {
+		const enabled = envFeatures === null || envFeatures.has(algo);
+		return enabled ? [[algo], []] : [[]];
+	});
 
-	const serializationVariants: Feature[][] = [
-		[],
-		['deserialize', 'serialize'],
-	];
-	const sha224Variants: Feature[][] = quickBuild ? [[]] : [['sha224'], []];
-	const sha256Variants: Feature[][] = [['sha256'], []];
-	const sha384Variants: Feature[][] = [['sha384'], []];
-	const sha512Variants: Feature[][] = quickBuild ? [[]] : [['sha512'], []];
-	const sha512_256Variants: Feature[][] = quickBuild
-		? [[]]
-		: [['sha512_256'], []];
+	// ── Serialization dimension ──────────────────────────────────────
+	// Active only when both halves are requested (or no override given).
+	const serializationEnabled =
+		envFeatures === null ||
+		(envFeatures.has('serialize') && envFeatures.has('deserialize'));
 
-	for (const sd of serializationVariants) {
-		for (const sha224 of sha224Variants) {
-			for (const sha256 of sha256Variants) {
-				for (const sha384 of sha384Variants) {
-					for (const sha512 of sha512Variants) {
-						for (const sha512_256 of sha512_256Variants) {
-							const algos: Feature[] = [
-								...sha224,
-								...sha256,
-								...sha384,
-								...sha512,
-								...sha512_256,
-							];
-							if (algos.length === 0) continue;
-							results.push(
-								makeIFeatureSet([...sd, ...algos, 'streaming']),
-							);
-						}
-					}
-				}
-			}
-		}
-	}
+	const serializationDimension: Feature[][] = serializationEnabled
+		? [[], ['deserialize', 'serialize']]
+		: [[]];
 
-	return results;
+	// ── Combine, filter, and build ───────────────────────────────────
+	// Streaming is always on and appended unconditionally.
+	return cartesian([serializationDimension, ...algoDimensions])
+		.filter((combo) => combo.some((f) => algoRegex.test(f)))
+		.map((combo) => makeIFeatureSet([...combo, 'streaming']));
 }

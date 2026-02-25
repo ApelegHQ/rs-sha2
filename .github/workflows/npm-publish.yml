@@ -19,13 +19,23 @@ jobs:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
-          node-version: '24'
+          node-version: '24.14.0'
           registry-url: https://registry.npmjs.org/
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb
+        with:
+          deno-version: 'v2.5.7'
       - uses: Aandreba/setup-binaryen@77f25f9d7d30f09667a2535888bf9516b31a4cd7
         with:
-          version: 126
+          # NB! Later versions seem to produce a broken implementation.
+          # Do not update from version '105' without checking first that the
+          # generated assets work as expected.
+          version: '105'
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Output rust version for educational purposes
+      - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+      - name: Output rust version
         run: rustup --version
       - name: Cache
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306
@@ -36,8 +46,35 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo clippy --all-features
+        name: 'Run clippy with all features'
       - run: cargo test --all-features
-      - run: cd ecmascript && npm ci
-      - run: cd ecmascript &&  npm publish --provenance --access public
+        name: 'Test with all features'
+      - run: cargo build --all-features
+        name: 'Build with all features'
+      - run: sudo apt-get install -y libcmocka-dev
+        name: 'Install cmocka (Ubuntu)'
+      - run: cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
+        name: 'Create CMake build system'
+        working-directory: ./c/test/build
+      - run: cmake --build build
+        name: 'Build C binding tests'
+        working-directory: ./c/test
+      - run: ../c/test/build/src/sha2_cavs_tests
+        name: 'Run C binding tests'
+        working-directory: ./ecmascript
+      - run: rustup target add wasm32v1-none
+      - run: npm ci
+        working-directory: ./ecmascript
+      - run: npm run build
+        working-directory: ./ecmascript
+      - run: npm test -- --no-build
+        working-directory: ./ecmascript
+      - run: deno test --sloppy-imports --allow-read=tests/vectors
+        working-directory: ./ecmascript/.test-harness
+      - run: find dist -name '*.mjs' -o -name '*.cjs' -exec sha384sum {} + && find build -name 'wasm_sha2.wasm'  -exec sha384sum {} +
+        name: Digests of generated assets
+        working-directory: ./ecmascript
+      - run: npm publish --provenance --access public
+        working-directory: ./ecmascript/dist
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

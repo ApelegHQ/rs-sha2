@@ -15,10 +15,17 @@
 
 import * as esbuild from 'esbuild';
 import { readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, relative, sep } from 'node:path';
+import { sep as posixSep } from 'node:path/posix';
 import * as prettier from 'prettier';
 import { BUILD_DIR, RESOURCES_DIR } from './config.js';
 import { hasFeature, type IFeatureSet } from './features.js';
+
+const wasmPathFormatter = (p: string) => {
+	return (
+		'.' + posixSep + relative(process.cwd(), p).replaceAll(sep, posixSep)
+	);
+};
 
 /**
  * Bundle `resources/wrapper.ts` with esbuild — resolving the wasm2js module via
@@ -28,10 +35,10 @@ import { hasFeature, type IFeatureSet } from './features.js';
  * @returns Path to the bundled + formatted output file.
  */
 export async function bundleWrapper(
-	IFeatureSet: IFeatureSet,
+	featureSet: IFeatureSet,
 	wasmJsPath: string,
 ): Promise<string> {
-	const outfile = join(BUILD_DIR, `${IFeatureSet.slug}.wrapped.js`);
+	const outfile = join(BUILD_DIR, `${featureSet.slug}.wrapped.js`);
 
 	await esbuild.build({
 		entryPoints: [join(RESOURCES_DIR, 'wrapper.ts')],
@@ -39,29 +46,29 @@ export async function bundleWrapper(
 		format: 'esm',
 		outfile,
 		alias: {
-			'about:src': wasmJsPath,
+			'about:src': wasmPathFormatter(wasmJsPath),
 		},
 		define: {
 			'import.meta.features.sha224': String(
-				hasFeature(IFeatureSet, 'sha224'),
+				hasFeature(featureSet, 'sha224'),
 			),
 			'import.meta.features.sha256': String(
-				hasFeature(IFeatureSet, 'sha256'),
+				hasFeature(featureSet, 'sha256'),
 			),
 			'import.meta.features.sha384': String(
-				hasFeature(IFeatureSet, 'sha384'),
+				hasFeature(featureSet, 'sha384'),
 			),
 			'import.meta.features.sha512': String(
-				hasFeature(IFeatureSet, 'sha512'),
+				hasFeature(featureSet, 'sha512'),
 			),
 			'import.meta.features.sha512_256': String(
-				hasFeature(IFeatureSet, 'sha512_256'),
+				hasFeature(featureSet, 'sha512_256'),
 			),
 			'import.meta.features.deserialize': String(
-				hasFeature(IFeatureSet, 'deserialize'),
+				hasFeature(featureSet, 'deserialize'),
 			),
 			'import.meta.features.serialize': String(
-				hasFeature(IFeatureSet, 'serialize'),
+				hasFeature(featureSet, 'serialize'),
 			),
 		},
 	});

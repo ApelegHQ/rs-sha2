@@ -61,17 +61,17 @@ declare global {
 // Exported types
 // ----------------------------------------------------------------
 
-type SerializeType = (scrub?: boolean) => ArrayBuffer;
+type SerializeType = (scrub?: boolean) => ArrayBufferLike;
 
 export type HashInstance = {
 	/**
 	 * Feeds data into the running hash. May be called multiple times.
 	 */
-	update: (data: ArrayBuffer | ArrayBufferView, scrub?: boolean) => void;
+	update: (data: ArrayBufferLike | ArrayBufferView, scrub?: boolean) => void;
 	/**
 	 * Completes the hash computation and returns the digest.
 	 */
-	finalize: (scrub?: boolean) => ArrayBuffer;
+	finalize: (scrub?: boolean) => ArrayBufferLike;
 	/**
 	 * Resets the hash back to its initial state (clears streaming mode).
 	 */
@@ -81,9 +81,9 @@ export type HashInstance = {
 	 * call.  Throws if the instance is already in streaming mode.
 	 */
 	digest: (
-		data: ArrayBuffer | ArrayBufferView,
+		data: ArrayBufferLike | ArrayBufferView,
 		scrub?: boolean,
-	) => ArrayBuffer;
+	) => ArrayBufferLike;
 };
 
 export type SerializableHashInstance = HashInstance & {
@@ -110,7 +110,7 @@ export type SerializableHashInstanceConstructor =
  * Creates a new hash instance resuming from previously serialised state.
  */
 export type HashInstanceDeserializer = (
-	serializedData: ArrayBuffer | ArrayBufferView | null,
+	serializedData: ArrayBufferLike | ArrayBufferView | null,
 	scrub?: boolean,
 ) => HashInstance;
 
@@ -119,7 +119,7 @@ export type HashInstanceDeserializer = (
  * serialised state.
  */
 export type SerializableHashInstanceDeserializer = (
-	serializedData: ArrayBuffer | ArrayBufferView | null,
+	serializedData: ArrayBufferLike | ArrayBufferView | null,
 	scrub?: boolean,
 ) => SerializableHashInstance;
 
@@ -170,7 +170,7 @@ type WasmDeserialize = (serializedPtr: number, statePtr: number) => number;
  * bits, which is equivalent to rounding up to the next multiple of 16.
  *
  * @param v - The byte offset or size to align.
- * @returns The smallest multiple of 16 that is e `v`.
+ * @returns The smallest multiple of 16 that is >= `v`.
  *
  * @example
  * align128(0)  // => 0
@@ -208,10 +208,9 @@ function wrap(v: unknown): PropertyDescriptor {
  * @param o - The target object on which to define the property.
  * @param p - The property key.
  * @param v - The value to assign to the property.
- * @returns The target object `o` (as returned by `Object.defineProperty`).
  */
-function set(o: object, p: string | symbol, v: unknown): object {
-	return Object.defineProperty(o, p, wrap(v));
+function set(o: object, p: string | symbol, v: unknown) {
+	Object.defineProperty(o, p, wrap(v));
 }
 
 /**
@@ -253,7 +252,7 @@ function doScrub(buffer: Uint8Array, offset: number, size: number): void {
  * single SHA-2 variant.
  *
  * The returned constructor, when called, allocates (or restores) internal
- * hash state on the WASM heap and returns a frozen instance object exposing
+ * hash state on the WASM heap and returns an instance object exposing
  * `update`, `finalize`, `reset`, `digest`, and (optionally) `serialize`
  * methods.
  *
@@ -309,7 +308,7 @@ function initFactory$(
 	 * @returns The hash instance object.
 	 */
 	return function (
-		serializedData?: ArrayBuffer | ArrayBufferView | null,
+		serializedData?: ArrayBufferLike | ArrayBufferView | null,
 		scrub?: boolean,
 	): HashInstance {
 		/**
@@ -327,6 +326,15 @@ function initFactory$(
 				// does not overlap with the state region at alignedHeapBase.
 				var statePtr = heap.byteLength - serializedData.byteLength;
 
+				var requiredSize = init(0);
+				// The output state is written at:
+				//   [alignedHeapBase, alignedHeapBase + N)
+				// Ensure the input region [statePtr, requiredSize) cannot
+				// overlap.
+				if (statePtr < alignedHeapBase + requiredSize) {
+					throw new RangeError('Serialized data too large for heap');
+				}
+
 				var serializedDataU8: Uint8Array;
 				// Normalise the input to a plain Uint8Array so we can
 				// call heap.set() with it.
@@ -334,7 +342,7 @@ function initFactory$(
 					serializedDataU8 = new Uint8Array(serializedData);
 				} else if (!(serializedData instanceof Uint8Array)) {
 					serializedDataU8 = new Uint8Array(
-						serializedData as unknown as ArrayBuffer,
+						serializedData.buffer,
 						serializedData.byteOffset,
 						serializedData.byteLength,
 					);
@@ -411,16 +419,19 @@ function initFactory$(
 		 * @returns Whatever `cb` returned.
 		 */
 		function callFactory<T>(cb: () => T, scrub?: boolean): T {
-			// Copy local state � WASM heap.
+			// Copy local state -> WASM heap.
 			heap.set(s, alignedHeapBase);
-			var r = cb();
-			// Copy (potentially mutated) state back from WASM heap � local.
-			s.set(heap.subarray(alignedHeapBase, alignedHeapBase + sSize));
-			if (scrub) {
-				doScrub(heap, alignedHeapBase, sSize);
-			}
+			try {
+				var r = cb();
+				// Copy (potentially mutated) state back from WASM heap � local.
+				s.set(heap.subarray(alignedHeapBase, alignedHeapBase + sSize));
 
-			return r;
+				return r;
+			} finally {
+				if (scrub) {
+					doScrub(heap, alignedHeapBase, sSize);
+				}
+			}
 		}
 
 		/**
@@ -442,8 +453,8 @@ function initFactory$(
 		 *     If `true`, both the data region and the state region on the
 		 *     WASM heap are zeroed after the operation completes.
 		 */
-		function update$(
-			data: ArrayBuffer | ArrayBufferView,
+		var update$ = function update$(
+			data: ArrayBufferLike | ArrayBufferView,
 			scrub?: boolean,
 		): void {
 			return callFactory(function () {
@@ -452,7 +463,7 @@ function initFactory$(
 				/** 16-byte-aligned offset where input data is staged. */
 				var data_ptr = align128(alignedHeapBase + sSize);
 
-				/** Total heap size  used as the upper bound. */
+				/** Total heap size -- used as the upper bound. */
 				var data_max = heap.byteLength;
 
 				/**
@@ -468,7 +479,7 @@ function initFactory$(
 					dataU8 = new Uint8Array(data);
 				} else if (!(data instanceof Uint8Array)) {
 					dataU8 = new Uint8Array(
-						data as unknown as ArrayBuffer,
+						data.buffer,
 						data.byteOffset,
 						data.byteLength,
 					);
@@ -490,13 +501,13 @@ function initFactory$(
 					);
 				}
 			}, scrub);
-		}
+		} satisfies HashInstance['update'];
 		set(instance, 'update', update$);
 
 		/**
 		 * Finalises the hash computation and returns the resulting digest.
 		 *
-		 * The internal state is **not** automatically reset  call
+		 * The internal state is **not** automatically reset -- call
 		 * {@link reset$} afterwards if you wish to reuse the instance.
 		 *
 		 * @param scrub
@@ -504,7 +515,7 @@ function initFactory$(
 		 *     heap are zeroed after the result has been copied out.
 		 * @returns The raw hash digest.
 		 */
-		function finalize$(scrub?: boolean): ArrayBufferLike {
+		var finalize$ = function finalize$(scrub?: boolean): ArrayBufferLike {
 			return callFactory(function () {
 				streaming = true;
 
@@ -523,7 +534,7 @@ function initFactory$(
 
 				return r.buffer;
 			}, scrub);
-		}
+		} satisfies HashInstance['finalize'];
 		set(instance, 'finalize', finalize$);
 
 		/**
@@ -533,12 +544,12 @@ function initFactory$(
 		 * After a reset the instance can be reused for a completely new
 		 * hash computation (including via {@link digest$}).
 		 */
-		function reset$(): void {
+		var reset$ = function reset$(): void {
 			return callFactory(function () {
 				streaming = false;
 				reset(alignedHeapBase);
 			}, false);
-		}
+		} satisfies HashInstance['reset'];
 		set(instance, 'reset', reset$);
 
 		/**
@@ -558,8 +569,8 @@ function initFactory$(
 		 * @returns The raw hash digest.
 		 * @throws If the instance is currently in streaming mode.
 		 */
-		function digest$(
-			data: ArrayBuffer | ArrayBufferView,
+		var digest$ = function digest$(
+			data: ArrayBufferLike | ArrayBufferView,
 			scrub?: boolean,
 		): ArrayBufferLike {
 			if (streaming) {
@@ -567,11 +578,12 @@ function initFactory$(
 			}
 
 			update$(data, scrub);
+			// Not scrubbing on purpose, since `reset$` implies scrubbing
 			var r = finalize$(false);
 			reset$();
 
 			return r;
-		}
+		} satisfies HashInstance['digest'];
 		set(instance, 'digest', digest$);
 
 		/**
@@ -587,7 +599,7 @@ function initFactory$(
 		 *     WASM heap are zeroed after the result has been copied out.
 		 * @returns An opaque blob representing the hash state.
 		 */
-		function serialize$(scrub?: boolean): ArrayBufferLike {
+		var serialize$ = function serialize$(scrub?: boolean): ArrayBufferLike {
 			return callFactory(function () {
 				/** 16-byte-aligned offset where serialised output is written. */
 				var result_ptr = align128(alignedHeapBase + sSize);
@@ -604,7 +616,7 @@ function initFactory$(
 
 				return r.buffer;
 			}, scrub);
-		}
+		} satisfies SerializableHashInstance['serialize'];
 		if (import.meta.features.serialize) {
 			set(instance, 'serialize', serialize$);
 		}
