@@ -1,0 +1,31 @@
+[package]
+name = "sha2"
+version = { workspace = true }
+edition =  { workspace = true }
+
+[[bin]]
+name = "app"
+path = "src/main.rs"
+required-features = ["std"]
+
+[lib]
+name = "sha2"
+path = "src/lib.rs"
+crate-type = ["rlib"]
+
+[features]
+default = ["streaming", "sha256", "deserialize", "serialize"]
+deserialize = []
+serialize = []
+sha224 = []
+sha256 = []
+sha384 = []
+sha512 = []
+sha512_256 = []
+std = []
+streaming = []
+sync = []
+
+[dependencies]
+
+[build-dependencies]

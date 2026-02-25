@@ -1,0 +1,29 @@
+export type * from './types.cjs';
+import type { Sha2Factories } from './types.cjs';
+
+/**
+ * Entry-point that instantiates the underlying WebAssembly module, sets up
+ * the shared heap, and returns an object whose properties are
+ * hash-instance constructor functions -- one per enabled SHA-2 variant.
+ *
+ * Which variants are included is controlled by the build-time feature flags
+ * on `import.meta.features` (`sha224`, `sha256`, `sha384`, `sha512`,
+ * `sha512_256`).
+ *
+ * @returns An object mapping algorithm names to their respective factory /
+ *     constructor functions.
+ *
+ * @example
+ * const factories = await sha2();
+ * const hasher    = factories.sha256();       // fresh instance
+ * const digest    = hasher.digest(myData);    // one-shot
+ *
+ * @example
+ * const factories = await sha2();
+ * const hasher    = factories.sha512();
+ * hasher.update(chunk1);
+ * hasher.update(chunk2);
+ * const digest = hasher.finalize();
+ */
+declare function _default(): Promise<Sha2Factories<%types%>>;
+export default _default;

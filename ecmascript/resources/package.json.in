@@ -1,0 +1,15 @@
+{
+  "name": "@apeleghq/sha2",
+  "author": "Apeleg Limited",
+  "keywords": [],
+  "description": "Streaming SHA-2 implementation with exportable state",
+  "version": "0.0.0",
+  "license": "UNLICENSED",
+  "repository": "",
+  "type": "module",
+  "module": "./index.mjs",
+  "main": "./index.cjs",
+  "types": "./index.d.cts",
+  "exports": {
+  }
+}

@@ -1,0 +1,47 @@
+# Copyright © 2026 Apeleg Limited. All rights reserved.
+#
+# Permission to use, copy, modify, and distribute this software for any
+# purpose with or without fee is hereby granted, provided that the above
+# copyright notice and this permission notice appear in all copies.
+#
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+# REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+# AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+# INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+# LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+# OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+# PERFORMANCE OF THIS SOFTWARE.
+
+[package]
+name = "wasm-sha2"
+version = { workspace = true }
+edition =  { workspace = true }
+
+[lib]
+name = "wasm_sha2"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+# See <https://github.com/rust-lang/rust/issues/151083>
+test = false
+doctest = false
+
+[features]
+default = ["sha256", "deserialize", "serialize"]
+deserialize = ["c-sha2/deserialize"]
+serialize = ["c-sha2/serialize"]
+sha224 = ["c-sha2/sha224"]
+sha256 = ["c-sha2/sha256"]
+sha384 = ["c-sha2/sha384"]
+sha512_256 = ["c-sha2/sha512_256"]
+sha512 = ["c-sha2/sha512"]
+std = ["c-sha2/std"]
+streaming = ["c-sha2/streaming"]
+sync = ["c-sha2/sync"]
+wee_alloc = ["dep:wee_alloc"]
+
+[dependencies]
+c-sha2 = { path = "../c", default-features = false, features = [] }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+wee_alloc = { version = "=0.4.5", default-features = false, optional = true }
+
