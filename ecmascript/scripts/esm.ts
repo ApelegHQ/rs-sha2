@@ -32,22 +32,26 @@ export async function buildEsm(
 	featureSet: IFeatureSet,
 	wrappedJsPath: string,
 ): Promise<string> {
-	const intermediaryPath = join(
+	const intermediary1Path = join(
 		BUILD_DIR,
-		`${featureSet.slug}.intermediary.mjs`,
+		`${featureSet.slug}.intermediary1.mjs`,
+	);
+	const intermediary2Path = join(
+		BUILD_DIR,
+		`${featureSet.slug}.intermediary2.mjs`,
 	);
 	const outputPath = join(DIST_DIR, `${featureSet.slug}.mjs`);
 
 	/* ---- wrap ---- */
 	const source = await readFile(wrappedJsPath, 'utf-8');
 	const wrapped = [ESM_HEADER, source, ESM_FOOTER].join('\n');
-	await writeFile(intermediaryPath, wrapped, 'utf-8');
+	await writeFile(intermediary1Path, wrapped, 'utf-8');
 
 	/* ---- minify ---- */
-	await runClosureCompiler(intermediaryPath, outputPath);
+	await runClosureCompiler(intermediary1Path, intermediary2Path);
 
 	/* ---- post-process ---- */
-	const minified = await readFile(outputPath, 'utf-8');
+	const minified = await readFile(intermediary2Path, 'utf-8');
 
 	// Prepend `var exports;` to the very first line
 	// Append `;export default exports;` to the very last line

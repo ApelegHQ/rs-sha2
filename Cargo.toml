@@ -18,7 +18,7 @@ members = ["c", "rust", "wasm"]
 
 [workspace.package]
 edition = "2024"
-version = "0.1.0"
+version = "0.1.1"
 license = "ISC"
 repository = "git+https://github.com/ApelegHQ/rs-sha2.git"
 keywords = ["sha256", "sha2", "hash", "digest", "streaming"]

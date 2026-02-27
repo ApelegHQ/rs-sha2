@@ -1,4 +1,4 @@
-# WASM SHA-2 (Rust → WebAssembly)
+# WASM SHA-2 (Rust → WebAssembly → JavaScript)
 
 ![NPM Downloads](https://img.shields.io/npm/dw/@apeleghq/sha2?style=flat-square)
 
@@ -13,10 +13,11 @@ typed API.
 ## 🚀 Features
 
 - Streaming and one-shot hashing APIs.
-- Zero runtime dependencies — pure traspiled WASM + light JS glue.
+- Zero runtime dependencies — pure transpiled WASM + light JS glue.
 - Small, efficient heap sharing between JS and transpiled WASM.
 - Optional serialisation/deserialisation of internal state.
 - TypeScript definitions included.
+- ESM and UMD exports.
 
 ## ⚙️ Installation
 
@@ -34,10 +35,10 @@ yarn add @apeleghq/sha2
 
 ## 📦 Package contents
 
-- Compiled WebAssembly module (.wasm)
+- Compiled WebAssembly module (.wasm), transpiled to JavaScript
 - JS/ESM glue to load the module
 - TypeScript declaration file (.d.ts) — the API described below
-- README, LICENSE, tests
+- README, LICENSE
 
 ## 🔌 API Overview
 

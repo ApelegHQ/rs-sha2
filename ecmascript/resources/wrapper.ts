@@ -690,7 +690,18 @@ function sha2(): Promise<Sha2Result> {
 		 * The first byte of the WASM heap that is not occupied by the data
 		 * section (as reported by the `__heap_base` global export).
 		 */
-		var heapBase: number = instance.__heap_base;
+		var heapBase: number =
+			typeof instance.__heap_base === 'object'
+				? instance.__heap_base.value
+				: instance.__heap_base;
+
+		if (
+			typeof heapBase !== 'number' ||
+			!Number.isSafeInteger(heapBase) ||
+			heapBase < 0
+		) {
+			throw new TypeError('Unable to determine the heap base');
+		}
 
 		/**
 		 * `heapBase` rounded up to the nearest 16-byte boundary. All

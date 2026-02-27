@@ -44,4 +44,3 @@ c-sha2 = { path = "../c", default-features = false, features = [] }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 wee_alloc = { version = "=0.4.5", default-features = false, optional = true }
-

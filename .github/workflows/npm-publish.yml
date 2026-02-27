@@ -26,10 +26,7 @@ jobs:
           deno-version: 'v2.5.7'
       - uses: Aandreba/setup-binaryen@77f25f9d7d30f09667a2535888bf9516b31a4cd7
         with:
-          # NB! Later versions seem to produce a broken implementation.
-          # Do not update from version '105' without checking first that the
-          # generated assets work as expected.
-          version: '105'
+          version: '126'
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e
         with:
