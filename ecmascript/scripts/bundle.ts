@@ -13,69 +13,140 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import * as esbuild from 'esbuild';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { sep as posixSep } from 'node:path/posix';
-import * as prettier from 'prettier';
-import { BUILD_DIR, RESOURCES_DIR } from './config.js';
-import { hasFeature, type IFeatureSet } from './features.js';
+import { BUILD_DIR } from './config.js';
+import { bundleWrapperFactory } from './utils/bundle-factory.js';
+import { type IFeatureSet } from './utils/features.js';
 
 const wasmPathFormatter = (p: string) => {
 	return (
-		'.' + posixSep + relative(process.cwd(), p).replaceAll(sep, posixSep)
+		'..' + posixSep + relative(process.cwd(), p).replaceAll(sep, posixSep)
 	);
 };
 
 /**
- * Bundle `resources/wrapper.ts` with esbuild — resolving the wasm2js module via
- * an alias and injecting compile-time feature flags — then format the result
- * with Prettier.
+ * Bundles `resources/wrapper.ts` into an ECMAScript module with wasm2js
+ * resolution.
+ * Uses a custom resolver plugin to map the UUID placeholder to a real wasm JS
+ * file.
  *
+ * @param featureSet - Object containing feature flags to include in the build.
+ * @param wasmJsPath - Path to the pre-compiled wasm2js output file.
  * @returns Path to the bundled + formatted output file.
- */
-export async function bundleWrapper(
+ * @example
+ * const output = await bundleWrapperEcmascript(
+ *   { slug: 'sha256', ... },
+ *   './wasm/your-wasm.js'
+ * );
+ */ export async function bundleWrapperEcmascript(
 	featureSet: IFeatureSet,
 	wasmJsPath: string,
 ): Promise<string> {
-	const outfile = join(BUILD_DIR, `${featureSet.slug}.wrapped.js`);
+	const outfile = join(BUILD_DIR, `${featureSet.slug}.wrapped.es.js`);
 
-	await esbuild.build({
-		entryPoints: [join(RESOURCES_DIR, 'wrapper.ts')],
-		bundle: true,
-		format: 'esm',
-		outfile,
-		alias: {
-			'about:src': wasmPathFormatter(wasmJsPath),
+	return bundleWrapperFactory(outfile, [
+		{
+			name: 'resolver',
+			setup(build) {
+				build.onResolve(
+					{
+						filter: /^urn:uuid:2ba445c2-d903-4f19-abd0-c41d2cfd72f1$/,
+						namespace: 'file',
+					},
+					(args) => {
+						return build.resolve(wasmPathFormatter(wasmJsPath), {
+							importer: args.importer,
+							namespace: args.namespace,
+							resolveDir: args.resolveDir,
+							kind: args.kind,
+							pluginData: args.pluginData,
+							with: args.with,
+						});
+					},
+				);
+			},
 		},
-		define: {
-			'import.meta.features.sha224': String(
-				hasFeature(featureSet, 'sha224'),
-			),
-			'import.meta.features.sha256': String(
-				hasFeature(featureSet, 'sha256'),
-			),
-			'import.meta.features.sha384': String(
-				hasFeature(featureSet, 'sha384'),
-			),
-			'import.meta.features.sha512': String(
-				hasFeature(featureSet, 'sha512'),
-			),
-			'import.meta.features.sha512_256': String(
-				hasFeature(featureSet, 'sha512_256'),
-			),
-			'import.meta.features.deserialize': String(
-				hasFeature(featureSet, 'deserialize'),
-			),
-			'import.meta.features.serialize': String(
-				hasFeature(featureSet, 'serialize'),
-			),
+	])(featureSet);
+}
+
+/**
+ * Bundles `resources/wrapper.ts` with the wasm module embedded as base64.
+ * Uses two specialised plugins:
+ * 1. Resolves the UUID to a custom `wasm-instantiate.ts` module
+ * 2. Loads the actual wasm file as base64 string
+ *
+ * @param featureSet - Object containing feature flags to include in the build.
+ * @param wasmPath - Path to the original wasm file (not wasm2js).
+ * @returns Path to the bundled + formatted output file containing embedded wasm.
+ * @example
+ * const output = await bundleWrapperWasm(
+ *   { slug: 'sha512', ... },
+ *   './wasm/your-wasm.wasm'
+ * );
+ */
+export async function bundleWrapperWasm(
+	featureSet: IFeatureSet,
+	wasmPath: string,
+): Promise<string> {
+	const outfile = join(BUILD_DIR, `${featureSet.slug}.wrapped.wasm.js`);
+
+	void wasmPath;
+
+	return bundleWrapperFactory(outfile, [
+		{
+			name: 'resolver',
+			setup(build) {
+				build.onResolve(
+					{
+						filter: /^urn:uuid:2ba445c2-d903-4f19-abd0-c41d2cfd72f1$/,
+						namespace: 'file',
+					},
+					(args) => {
+						return build.resolve('./wasm-instantiate.ts', {
+							importer: args.importer,
+							namespace: args.namespace,
+							resolveDir: args.resolveDir,
+							kind: args.kind,
+							pluginData: args.pluginData,
+							with: args.with,
+						});
+					},
+				);
+
+				build.onResolve(
+					{
+						filter: /^urn:uuid:0a426584-7134-49f9-ad16-bae3759aeb1c$/,
+						namespace: 'file',
+					},
+					(args) => {
+						return {
+							pluginName: 'resolver',
+							path: args.path,
+							external: false,
+							sideEffects: false,
+							namespace: 'resolver',
+						};
+					},
+				);
+
+				build.onLoad(
+					{
+						filter: /^urn:uuid:0a426584-7134-49f9-ad16-bae3759aeb1c$/,
+						namespace: 'resolver',
+					},
+					async () => {
+						const file = await readFile(wasmPath, {
+							encoding: null,
+						});
+
+						return {
+							contents: `export var base64Text = ${JSON.stringify(file.toString('base64'))};`,
+						};
+					},
+				);
+			},
 		},
-	});
-
-	const raw = await readFile(outfile, 'utf-8');
-	const formatted = await prettier.format(raw, { filepath: outfile });
-	await writeFile(outfile, formatted, 'utf-8');
-
-	return outfile;
+	])(featureSet);
 }

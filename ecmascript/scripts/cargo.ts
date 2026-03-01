@@ -15,8 +15,8 @@
 
 import { join } from 'node:path';
 import { BUILD_DIR, CARGO_CONFIG, WORKSPACE_DIR } from './config.js';
-import { exec } from './exec.js';
-import type { IFeatureSet } from './features.js';
+import { exec } from './utils/exec.js';
+import type { IFeatureSet } from './utils/features.js';
 
 /**
  * Compile the Rust crate to a WASM binary via Cargo.

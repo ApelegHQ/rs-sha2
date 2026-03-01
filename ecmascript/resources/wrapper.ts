@@ -30,7 +30,7 @@
  * @module sha2
  */
 
-import instantiate from 'about:src';
+import instantiate from 'urn:uuid:2ba445c2-d903-4f19-abd0-c41d2cfd72f1';
 
 /* eslint-disable no-var */
 /* eslint no-restricted-syntax: ["error", "ArrowFunctionExpression", "ArrayPattern", "RestElement", "Class", "WithStatement", "VariableDeclaration[kind='const']", "VariableDeclaration[kind='let']", "BinaryExpression[operator='in']"] */
@@ -67,7 +67,10 @@ export type HashInstance = {
 	/**
 	 * Feeds data into the running hash. May be called multiple times.
 	 */
-	update: (data: ArrayBufferLike | ArrayBufferView, scrub?: boolean) => void;
+	update: (
+		data: ArrayBufferLike | ArrayBufferView,
+		scrub?: boolean,
+	) => HashInstance;
 	/**
 	 * Completes the hash computation and returns the digest.
 	 */
@@ -75,7 +78,7 @@ export type HashInstance = {
 	/**
 	 * Resets the hash back to its initial state (clears streaming mode).
 	 */
-	reset: () => void;
+	reset: () => HashInstance;
 	/**
 	 * One-shot convenience -- `update` + `finalize` + `reset` in a single
 	 * call.  Throws if the instance is already in streaming mode.
@@ -158,6 +161,45 @@ type WasmFinalize = (statePtr: number, resultPtr: number) => number;
 type WasmReset = (ptr: number) => void;
 type WasmSerialize = (statePtr: number, resultPtr: number) => number;
 type WasmDeserialize = (serializedPtr: number, statePtr: number) => number;
+
+/* eslint-disable @typescript-eslint/naming-convention */
+interface IWasmInstance extends WebAssembly.Instance {
+	exports: {
+		memory: WebAssembly.Memory;
+		__heap_base: WebAssembly.Global;
+		sha224_init: WasmInit;
+		sha224_update: WasmUpdate;
+		sha224_finalize: WasmFinalize;
+		sha224_reset: WasmReset;
+		sha224_serialize: WasmSerialize;
+		sha224_deserialize: WasmDeserialize;
+		sha256_init: WasmInit;
+		sha256_update: WasmUpdate;
+		sha256_finalize: WasmFinalize;
+		sha256_reset: WasmReset;
+		sha256_serialize: WasmSerialize;
+		sha256_deserialize: WasmDeserialize;
+		sha384_init: WasmInit;
+		sha384_update: WasmUpdate;
+		sha384_finalize: WasmFinalize;
+		sha384_reset: WasmReset;
+		sha384_serialize: WasmSerialize;
+		sha384_deserialize: WasmDeserialize;
+		sha512_init: WasmInit;
+		sha512_update: WasmUpdate;
+		sha512_finalize: WasmFinalize;
+		sha512_reset: WasmReset;
+		sha512_serialize: WasmSerialize;
+		sha512_deserialize: WasmDeserialize;
+		sha512_256_init: WasmInit;
+		sha512_256_update: WasmUpdate;
+		sha512_256_finalize: WasmFinalize;
+		sha512_256_reset: WasmReset;
+		sha512_256_serialize: WasmSerialize;
+		sha512_256_deserialize: WasmDeserialize;
+	};
+}
+/* eslint-enable @typescript-eslint/naming-convention */
 
 // ----------------------------------------------------------------
 // Internal helpers
@@ -456,7 +498,7 @@ function initFactory$(
 		var update$ = function update$(
 			data: ArrayBufferLike | ArrayBufferView,
 			scrub?: boolean,
-		): void {
+		): HashInstance {
 			return callFactory(function () {
 				streaming = true;
 
@@ -500,6 +542,8 @@ function initFactory$(
 						data.byteLength > diff ? diff : data.byteLength,
 					);
 				}
+
+				return instance;
 			}, scrub);
 		} satisfies HashInstance['update'];
 		set(instance, 'update', update$);
@@ -544,7 +588,7 @@ function initFactory$(
 		 * After a reset the instance can be reused for a completely new
 		 * hash computation (including via {@link digest$}).
 		 */
-		var reset$ = function reset$(): void {
+		var reset$ = function reset$(): HashInstance {
 			return callFactory(function () {
 				streaming = false;
 				reset(alignedHeapBase);
@@ -677,23 +721,23 @@ type Sha2Result = Sha2Factories<string>;
  */
 function sha2(): Promise<Sha2Result> {
 	/** The raw WASM instance obtained from the embedded module. */
-	return instantiate({}).then(function (
-		instance: Record<string, ReturnType<typeof eval>>,
-	) {
+	return instantiate({}).then(function (instance: IWasmInstance) {
+		var exports = instance.exports;
 		/**
 		 * A `Uint8Array` view over the entire WebAssembly linear memory.
 		 * All WASM function calls read from / write to this buffer.
 		 */
-		var heap = new Uint8Array(instance.memory.buffer);
+		var heap = new Uint8Array(exports.memory.buffer);
 
 		/**
 		 * The first byte of the WASM heap that is not occupied by the data
 		 * section (as reported by the `__heap_base` global export).
 		 */
 		var heapBase: number =
-			typeof instance.__heap_base === 'object'
-				? instance.__heap_base.value
-				: instance.__heap_base;
+			typeof exports.__heap_base === 'object'
+				? exports.__heap_base.value
+				: /* Compatibility with old binaryen / wasm2js */
+					exports.__heap_base;
 
 		if (
 			typeof heapBase !== 'number' ||
@@ -719,12 +763,12 @@ function sha2(): Promise<Sha2Result> {
 				initFactory$(
 					heap,
 					alignedHeapBase,
-					instance.sha224_init,
-					instance.sha224_update,
-					instance.sha224_finalize,
-					instance.sha224_reset,
-					instance.sha224_serialize,
-					instance.sha224_deserialize,
+					exports.sha224_init,
+					exports.sha224_update,
+					exports.sha224_finalize,
+					exports.sha224_reset,
+					exports.sha224_serialize,
+					exports.sha224_deserialize,
 				),
 			);
 		}
@@ -736,12 +780,12 @@ function sha2(): Promise<Sha2Result> {
 				initFactory$(
 					heap,
 					alignedHeapBase,
-					instance.sha256_init,
-					instance.sha256_update,
-					instance.sha256_finalize,
-					instance.sha256_reset,
-					instance.sha256_serialize,
-					instance.sha256_deserialize,
+					exports.sha256_init,
+					exports.sha256_update,
+					exports.sha256_finalize,
+					exports.sha256_reset,
+					exports.sha256_serialize,
+					exports.sha256_deserialize,
 				),
 			);
 		}
@@ -753,12 +797,12 @@ function sha2(): Promise<Sha2Result> {
 				initFactory$(
 					heap,
 					alignedHeapBase,
-					instance.sha384_init,
-					instance.sha384_update,
-					instance.sha384_finalize,
-					instance.sha384_reset,
-					instance.sha384_serialize,
-					instance.sha384_deserialize,
+					exports.sha384_init,
+					exports.sha384_update,
+					exports.sha384_finalize,
+					exports.sha384_reset,
+					exports.sha384_serialize,
+					exports.sha384_deserialize,
 				),
 			);
 		}
@@ -770,12 +814,12 @@ function sha2(): Promise<Sha2Result> {
 				initFactory$(
 					heap,
 					alignedHeapBase,
-					instance.sha512_init,
-					instance.sha512_update,
-					instance.sha512_finalize,
-					instance.sha512_reset,
-					instance.sha512_serialize,
-					instance.sha512_deserialize,
+					exports.sha512_init,
+					exports.sha512_update,
+					exports.sha512_finalize,
+					exports.sha512_reset,
+					exports.sha512_serialize,
+					exports.sha512_deserialize,
 				),
 			);
 		}
@@ -787,12 +831,12 @@ function sha2(): Promise<Sha2Result> {
 				initFactory$(
 					heap,
 					alignedHeapBase,
-					instance.sha512_256_init,
-					instance.sha512_256_update,
-					instance.sha512_256_finalize,
-					instance.sha512_256_reset,
-					instance.sha512_256_serialize,
-					instance.sha512_256_deserialize,
+					exports.sha512_256_init,
+					exports.sha512_256_update,
+					exports.sha512_256_finalize,
+					exports.sha512_256_reset,
+					exports.sha512_256_serialize,
+					exports.sha512_256_deserialize,
 				),
 			);
 		}

@@ -30,6 +30,7 @@ const compilerCtor = (typeof googleClosureCompiler.compiler === 'function'
 export function runClosureCompiler(
 	inputPath: string,
 	outputPath: string,
+	externsFiles?: string[],
 ): Promise<void> {
 	return new Promise<void>((resolve, reject) => {
 		const instance = new compilerCtor({
@@ -40,6 +41,7 @@ export function runClosureCompiler(
 			language_out: 'ECMASCRIPT_2015',
 			assume_function_wrapper: true,
 			hide_warnings_for: 'JSC_UNREACHABLE_CODE',
+			...(externsFiles ? { externs: externsFiles } : {}),
 		});
 
 		instance.run((exitCode, _stdout, stderr) => {

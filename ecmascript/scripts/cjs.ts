@@ -15,9 +15,9 @@
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { runClosureCompiler } from './closure.js';
-import { BUILD_DIR, DIST_DIR } from './config.js';
-import type { IFeatureSet } from './features.js';
+import { runClosureCompiler } from './utils/closure.js';
+import { BUILD_DIR, DIST_DIR, RESOURCES_DIR } from './config.js';
+import type { IFeatureSet } from './utils/features.js';
 
 /* ---- UMD envelope (split across array elements for legibility) ---- */
 
@@ -40,10 +40,11 @@ const UMD_HEADER = [
 ].join('');
 
 const UMD_FOOTER = [
-	`;module.exports=DEFAULT_EXPORT})}).call(`,
+	`Object.defineProperty(DEFAULT_EXPORT, 'default', { value: DEFAULT_EXPORT, configurable: true, writable: true });`,
+	`module.exports=DEFAULT_EXPORT})}).call(`,
 	`typeof globalThis==="object"?globalThis:`,
 	`typeof self==="object"?self:`,
-	`typeof global==="object"?global:this,"sha2")`,
+	`typeof global==="object"?global:this,"sha2");`,
 ].join('');
 
 /**
@@ -54,19 +55,24 @@ const UMD_FOOTER = [
 export async function buildCjs(
 	featureSet: IFeatureSet,
 	wrappedJsPath: string,
+	type: string,
 ): Promise<string> {
 	const intermediaryPath = join(
 		BUILD_DIR,
-		`${featureSet.slug}.intermediary.cjs`,
+		`${featureSet.slug}.intermediary.${type}.cjs`,
 	);
-	const outputPath = join(DIST_DIR, `${featureSet.slug}.cjs`);
+	const outputPath = join(DIST_DIR, `${featureSet.slug}.${type}.cjs`);
 
 	const source = await readFile(wrappedJsPath, 'utf-8');
 	const wrapped = [UMD_HEADER, source, UMD_FOOTER].join('\n');
 
 	await writeFile(intermediaryPath, wrapped, 'utf-8');
 
-	await runClosureCompiler(intermediaryPath, outputPath);
+	let externsFiles: string[] | undefined;
+	if (type === 'wasm') {
+		externsFiles = [join(RESOURCES_DIR, 'closure.externs.wasm.js')];
+	}
+	await runClosureCompiler(intermediaryPath, outputPath, externsFiles);
 
 	return outputPath;
 }

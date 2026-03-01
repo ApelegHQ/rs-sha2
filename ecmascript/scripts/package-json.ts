@@ -13,24 +13,24 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+import { load } from 'js-toml';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DIST_DIR, PACKAGE_DIR, RESOURCES_DIR } from './config.js';
-import type { IFeatureSet } from './features.js';
-import { load } from 'js-toml';
+import type { IFeatureSet } from './utils/features.js';
 
 /**
  * Build the `import` / `require` condition block for a single variant.
  */
-function makeConditionEntry(fs: IFeatureSet) {
+function makeConditionEntry(fs: IFeatureSet, type: string) {
 	return {
 		import: {
 			types: `./${fs.slug}.d.mts`,
-			default: `./${fs.slug}.mjs`,
+			default: `./${fs.slug}.${type}.mjs`,
 		},
 		require: {
 			types: `./${fs.slug}.d.cts`,
-			default: `./${fs.slug}.cjs`,
+			default: `./${fs.slug}.${type}.cjs`,
 		},
 	};
 }
@@ -79,19 +79,21 @@ export async function generatePackageJson(
 	const primary = mostFeaturedVariant(featureSets);
 
 	// --- top-level convenience fields (for legacy bundlers) ---
-	template.main = `./${primary.slug}.cjs`;
-	template.module = `./${primary.slug}.mjs`;
+	template.main = `./${primary.slug}.es.cjs`;
+	template.module = `./${primary.slug}.es.mjs`;
 	template.types = `./${primary.slug}.d.cts`;
 
 	// --- exports map ---
 	const exports: Record<string, unknown> = {};
 
 	// Bare "." → most-featured variant
-	exports['.'] = makeConditionEntry(primary);
+	exports['.'] = makeConditionEntry(primary, 'es');
+	exports['./wasm'] = makeConditionEntry(primary, 'wasm');
 
 	// Named sub-paths for every variant (including the primary)
 	for (const fs of featureSets) {
-		exports[`./${fs.slug}`] = makeConditionEntry(fs);
+		exports[`./${fs.slug}`] = makeConditionEntry(fs, 'es');
+		exports[`./wasm/${fs.slug}`] = makeConditionEntry(fs, 'wasm');
 	}
 
 	template.exports = exports;

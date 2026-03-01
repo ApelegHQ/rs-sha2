@@ -19,70 +19,89 @@ import { describe, test } from 'node:test';
 import getSha2Instance from './get-sha2-instance.js';
 import { hexToBytes } from './helpers.js';
 
-const sha2 = await getSha2Instance();
+const sha2Esm = await getSha2Instance();
+const sha2EsmWasm = await getSha2Instance('wasm');
+const sha2Cjs = await getSha2Instance('', true);
+const sha2CjsWasm = await getSha2Instance('wasm', true);
 
-// ---------------------------------------------------------------------------
-describe('API shape', () => {
-	test('factory exposes sha256 and sha384', () => {
-		assert.equal(typeof sha2.sha256, 'function');
-		assert.equal(typeof sha2.sha384, 'function');
+for (const [name, module] of [
+	['ESM', sha2Esm],
+	['ESM (WASM)', sha2EsmWasm],
+	['CJS', sha2Cjs],
+	['CJS (WASM)', sha2CjsWasm],
+]) {
+	// ---------------------------------------------------------------------------
+	describe(`[${name}] API shape`, () => {
+		test('factory exposes sha256 and sha384 (', () => {
+			assert.equal(typeof module.sha256, 'function');
+			assert.equal(typeof module.sha384, 'function');
+		});
+
+		test('factory exposes sha256 and sha384', () => {
+			assert.equal(typeof module.sha256, 'function');
+			assert.equal(typeof module.sha384, 'function');
+		});
+
+		test('hash instance has update, finalize, reset, digest', () => {
+			const h = module.sha256();
+			for (const m of [
+				'update',
+				'finalize',
+				'reset',
+				'digest',
+			] as const) {
+				assert.equal(typeof h[m], 'function', `expected method ${m}`);
+			}
+		});
+
+		test('most-featured variant exposes serialize on instances', () => {
+			assert.equal(typeof module.sha256().serialize, 'function');
+		});
 	});
 
-	test('hash instance has update, finalize, reset, digest', () => {
-		const h = sha2.sha256();
-		for (const m of ['update', 'finalize', 'reset', 'digest'] as const) {
-			assert.equal(typeof h[m], 'function', `expected method ${m}`);
-		}
+	// ---------------------------------------------------------------------------
+	describe(`[${name}] reset behaviour`, () => {
+		// NIST vector: SHA-256(0xd3) = 28969cdf…
+		const msg = hexToBytes('d3');
+		const expected = hexToBytes(
+			'28969cdfa74a12c82f3bad960b0b000aca2ac329deea5c2328ebc6f2ba9802c1',
+		);
+
+		test('digest can be called repeatedly (implicit reset)', () => {
+			const h = module.sha256();
+			const d1 = h.digest(msg, false);
+			const d2 = h.digest(msg, true);
+			assert.deepStrictEqual(Buffer.from(d1), Buffer.from(expected));
+			assert.deepStrictEqual(Buffer.from(d2), Buffer.from(expected));
+		});
+
+		test('explicit reset after streaming allows a fresh digest', () => {
+			const h = module.sha256();
+			h.update(hexToBytes('aabbccdd')); // garbage
+			h.reset();
+			const digest = h.digest(msg);
+			assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
+		});
 	});
 
-	test('most-featured variant exposes serialize on instances', () => {
-		assert.equal(typeof sha2.sha256().serialize, 'function');
+	// ---------------------------------------------------------------------------
+	describe(`[${name}] empty message`, () => {
+		// SHA-256("") = e3b0c442…
+		const expected = hexToBytes(
+			'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+		);
+
+		test('one-shot digest of zero-length Uint8Array', () => {
+			const digest = module.sha256().digest(new Uint8Array(0));
+			assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
+		});
+
+		test('finalize without any prior update', () => {
+			const digest = module.sha256().finalize();
+			assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
+		});
 	});
-});
-
-// ---------------------------------------------------------------------------
-describe('reset behaviour', () => {
-	// NIST vector: SHA-256(0xd3) = 28969cdf…
-	const msg = hexToBytes('d3');
-	const expected = hexToBytes(
-		'28969cdfa74a12c82f3bad960b0b000aca2ac329deea5c2328ebc6f2ba9802c1',
-	);
-
-	test('digest can be called repeatedly (implicit reset)', () => {
-		const h = sha2.sha256();
-		const d1 = h.digest(msg, false);
-		const d2 = h.digest(msg, true);
-		assert.deepStrictEqual(Buffer.from(d1), Buffer.from(expected));
-		assert.deepStrictEqual(Buffer.from(d2), Buffer.from(expected));
-	});
-
-	test('explicit reset after streaming allows a fresh digest', () => {
-		const h = sha2.sha256();
-		h.update(hexToBytes('aabbccdd')); // garbage
-		h.reset();
-		const digest = h.digest(msg);
-		assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
-	});
-});
-
-// ---------------------------------------------------------------------------
-describe('empty message', () => {
-	// SHA-256("") = e3b0c442…
-	const expected = hexToBytes(
-		'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-	);
-
-	test('one-shot digest of zero-length Uint8Array', () => {
-		const digest = sha2.sha256().digest(new Uint8Array(0));
-		assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
-	});
-
-	test('finalize without any prior update', () => {
-		const digest = sha2.sha256().finalize();
-		assert.deepStrictEqual(Buffer.from(digest), Buffer.from(expected));
-	});
-});
-
+}
 // ---------------------------------------------------------------------------
 // These tests dynamically import sub-path variants, verifying that
 // package.json `exports` map entries resolve correctly.

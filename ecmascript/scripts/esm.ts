@@ -15,9 +15,9 @@
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { runClosureCompiler } from './closure.js';
-import { BUILD_DIR, DIST_DIR } from './config.js';
-import type { IFeatureSet } from './features.js';
+import { runClosureCompiler } from './utils/closure.js';
+import { BUILD_DIR, DIST_DIR, RESOURCES_DIR } from './config.js';
+import type { IFeatureSet } from './utils/features.js';
 
 const ESM_HEADER = 'var DEFAULT_EXPORT;';
 const ESM_FOOTER = `;if(typeof exports==="undefined")exports=DEFAULT_EXPORT`;
@@ -31,16 +31,17 @@ const ESM_FOOTER = `;if(typeof exports==="undefined")exports=DEFAULT_EXPORT`;
 export async function buildEsm(
 	featureSet: IFeatureSet,
 	wrappedJsPath: string,
+	type: string,
 ): Promise<string> {
 	const intermediary1Path = join(
 		BUILD_DIR,
-		`${featureSet.slug}.intermediary1.mjs`,
+		`${featureSet.slug}.intermediary1.${type}.mjs`,
 	);
 	const intermediary2Path = join(
 		BUILD_DIR,
-		`${featureSet.slug}.intermediary2.mjs`,
+		`${featureSet.slug}.intermediary2.${type}.mjs`,
 	);
-	const outputPath = join(DIST_DIR, `${featureSet.slug}.mjs`);
+	const outputPath = join(DIST_DIR, `${featureSet.slug}.${type}.mjs`);
 
 	/* ---- wrap ---- */
 	const source = await readFile(wrappedJsPath, 'utf-8');
@@ -48,7 +49,15 @@ export async function buildEsm(
 	await writeFile(intermediary1Path, wrapped, 'utf-8');
 
 	/* ---- minify ---- */
-	await runClosureCompiler(intermediary1Path, intermediary2Path);
+	let externsFiles: string[] | undefined;
+	if (type === 'wasm') {
+		externsFiles = [join(RESOURCES_DIR, 'closure.externs.wasm.js')];
+	}
+	await runClosureCompiler(
+		intermediary1Path,
+		intermediary2Path,
+		externsFiles,
+	);
 
 	/* ---- post-process ---- */
 	const minified = await readFile(intermediary2Path, 'utf-8');

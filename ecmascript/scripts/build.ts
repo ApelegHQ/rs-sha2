@@ -13,16 +13,19 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import { bundleWrapper } from './bundle.js';
+import { bundleWrapperEcmascript, bundleWrapperWasm } from './bundle.js';
 import { buildCargo } from './cargo.js';
 import { buildCjs } from './cjs.js';
 import { BUILD_DIR, DIST_DIR } from './config.js';
 import { copyAssets } from './copy-assets.js';
 import { generateDeclarations } from './declarations.js';
 import { buildEsm } from './esm.js';
-import { ensureDir } from './exec.js';
-import { generateFeatureCombinations, type IFeatureSet } from './features.js';
 import { generatePackageJson } from './package-json.js';
+import { ensureDir } from './utils/exec.js';
+import {
+	generateFeatureCombinations,
+	type IFeatureSet,
+} from './utils/features.js';
 import { convertWasmToJs } from './wasm2js.js';
 
 /** Run every build step for a single feature combination. */
@@ -30,16 +33,24 @@ async function buildVariant(featureSet: IFeatureSet): Promise<void> {
 	console.log('  Compiling Rust → WASM …');
 	const wasmPath = await buildCargo(featureSet);
 
+	console.log('  Bundling & formatting (WASM) …');
+	const wrappedPathWasm = await bundleWrapperWasm(featureSet, wasmPath);
+
 	console.log('  Converting WASM → JS …');
 	const { wasmJsPath } = await convertWasmToJs(wasmPath, featureSet);
 
 	console.log('  Bundling & formatting …');
-	const wrappedPath = await bundleWrapper(featureSet, wasmJsPath);
+	const wrappedPathEcmascript = await bundleWrapperEcmascript(
+		featureSet,
+		wasmJsPath,
+	);
 
 	console.log('  Building CJS + ESM outputs …');
 	await Promise.all([
-		buildCjs(featureSet, wrappedPath),
-		buildEsm(featureSet, wrappedPath),
+		buildCjs(featureSet, wrappedPathWasm, 'wasm'),
+		buildCjs(featureSet, wrappedPathEcmascript, 'es'),
+		buildEsm(featureSet, wrappedPathWasm, 'wasm'),
+		buildEsm(featureSet, wrappedPathEcmascript, 'es'),
 	]);
 
 	console.log('  Generating type declarations …');

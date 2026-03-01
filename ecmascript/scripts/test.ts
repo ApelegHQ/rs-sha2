@@ -17,8 +17,8 @@ import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { DIST_DIR, PACKAGE_DIR, SCRIPTS_DIR } from './config.js';
-import { ensureDir, execInherit } from './exec.js';
-import npm from './npm.js';
+import { ensureDir, execInherit } from './utils/exec.js';
+import npm from './utils/npm.js';
 
 const HARNESS_DIR = join(PACKAGE_DIR, '.test-harness');
 const TESTS_SRC = join(PACKAGE_DIR, 'tests');

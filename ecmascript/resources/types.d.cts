@@ -14,12 +14,16 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
 type SerializeType = (scrub?: boolean) => ArrayBufferLike;
 export type HashInstance = {
 	/**
 	 * Feeds data into the running hash. May be called multiple times.
 	 */
-	update: (data: ArrayBufferLike | ArrayBufferView, scrub?: boolean) => void;
+	update: (
+		data: ArrayBufferLike | ArrayBufferView,
+		scrub?: boolean,
+	) => HashInstance;
 	/**
 	 * Completes the hash computation and returns the digest.
 	 */
@@ -27,7 +31,7 @@ export type HashInstance = {
 	/**
 	 * Resets the hash back to its initial state (clears streaming mode).
 	 */
-	reset: () => void;
+	reset: () => HashInstance;
 	/**
 	 * One-shot convenience -- `update` + `finalize` + `reset` in a single
 	 * call.  Throws if the instance is already in streaming mode.

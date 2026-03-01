@@ -16,7 +16,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { DIST_DIR, RESOURCES_DIR } from './config.js';
-import type { IFeatureSet } from './features.js';
+import type { IFeatureSet } from './utils/features.js';
 
 /**
  * Generate `.d.cts` and `.d.mts` declaration files by substituting the

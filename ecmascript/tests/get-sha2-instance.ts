@@ -13,13 +13,20 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+import { createRequire } from 'node:module';
+
+const require = createRequire(import.meta.url);
+
 const baseName = '@apeleghq/sha2' as const;
 
-const getSha2Instance = async (namedExport?: string) => {
+const getSha2Instance = async (namedExport?: string, cjs?: boolean) => {
 	const importName = `${baseName}${namedExport ? `/${namedExport}` : ''}`;
-	const sha2: ReturnType<typeof eval> = await (
-		await import(importName)
-	).default();
+	if (cjs) {
+		const sha2 = await require(importName)();
+
+		return sha2;
+	}
+	const sha2 = await (await import(importName)).default();
 
 	return sha2;
 };

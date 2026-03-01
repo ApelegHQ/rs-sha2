@@ -17,8 +17,8 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { BUILD_DIR, WASM2JS_BIN } from './config.js';
-import { exec } from './exec.js';
-import type { IFeatureSet } from './features.js';
+import { exec } from './utils/exec.js';
+import type { IFeatureSet } from './utils/features.js';
 
 export interface IWasmJsResult {
 	wasmJsPath: string;
@@ -51,12 +51,13 @@ export async function convertWasmToJs(
 
 	// --- patch -----------------------------------------------------------------
 	let content = await readFile(wasmJsPath, 'utf-8');
+	// Patches to better match the WebAssembly API
 	content = content.replaceAll(
 		'Object.create(Object.prototype,',
 		'Object.create(null,',
 	);
 	content +=
-		'\n;export default function (a) { try { return Promise.resolve(instantiate(a)); } catch(e) { return Promise.reject(e); } };\n';
+		'\n;export default function (importObject) { try { var exports = instantiate(importObject); var exportsStr = "exports"; var instancePrototype = Object.create(null, { [exportsStr]: { configurable: true, enumerable: true, get: function () { return exports; } } }); var instance = Object.create(instancePrototype); return Promise.resolve(instance); } catch(e) { return Promise.reject(e); } };\n';
 	await writeFile(wasmJsPath, content, 'utf-8');
 
 	// --- extract exported symbols ---------------------------------------------

@@ -13,7 +13,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-import type { Feature } from './config.js';
+import type { Feature } from '../config.js';
 
 /** A resolved set of features with derived naming strings. */
 export interface IFeatureSet {
