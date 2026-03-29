@@ -254,7 +254,8 @@ mod state_sha256_test {
     test,
     feature = "sha512",
     feature = "deserialize",
-    feature = "serialize"
+    feature = "serialize",
+    feature = "sync"
 ))]
 mod state_sha512_test {
     use crate::*;

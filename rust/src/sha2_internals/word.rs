@@ -41,13 +41,13 @@ impl ShaWord for u32 {
     // const BYTES: usize = 4;
     const ZERO: Self = 0;
 
-    #[inline]
+    #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 4;
         u32::from_be_bytes([src[j], src[j + 1], src[j + 2], src[j + 3]])
     }
 
-    #[inline]
+    #[inline(always)]
     fn to_be_bytes_at(self, dst: &mut [u8], i: usize) {
         let j = i * 4;
         let b = self.to_be_bytes();
@@ -63,7 +63,7 @@ impl ShaWord for u32 {
         u32::rotate_right(self, n)
     }
     */
-    #[inline]
+    #[inline(always)]
     fn wrapping_add(self, rhs: Self) -> Self {
         u32::wrapping_add(self, rhs)
     }
@@ -73,7 +73,7 @@ impl ShaWord for u64 {
     // const BYTES: usize = 8;
     const ZERO: Self = 0;
 
-    #[inline]
+    #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 8;
         u64::from_be_bytes([
@@ -88,7 +88,7 @@ impl ShaWord for u64 {
         ])
     }
 
-    #[inline]
+    #[inline(always)]
     fn to_be_bytes_at(self, dst: &mut [u8], i: usize) {
         let j = i * 8;
         let b = self.to_be_bytes();
@@ -108,7 +108,7 @@ impl ShaWord for u64 {
         u64::rotate_right(self, n)
     }
     */
-    #[inline]
+    #[inline(always)]
     fn wrapping_add(self, rhs: Self) -> Self {
         u64::wrapping_add(self, rhs)
     }

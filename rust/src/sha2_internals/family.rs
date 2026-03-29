@@ -62,45 +62,84 @@ pub trait ShaFamily: 'static {
     // ---- default compression (written once, works for every family) ----
 
     /// Compress one block (`BLOCK_BYTES` bytes) into the 8-word chaining state.
+    #[inline(always)]
     fn compress(state: &mut [Self::Word; 8], block: &[u8]) {
+        #[inline(always)]
+        fn round<W: ShaWord, F: ShaFamily<Word = W> + ?Sized>(
+            w: W,
+            k: W,
+            a: &mut W,
+            b: &mut W,
+            c: &mut W,
+            d: &mut W,
+            e: &mut W,
+            f: &mut W,
+            g: &mut W,
+            h: &mut W,
+        ) {
+            let ch = (*e & *f) ^ (!*e & *g);
+            let maj = (*a & *b) ^ (*a & *c) ^ (*b & *c);
+            let temp1 = (*h)
+                .wrapping_add(F::big_sigma1(*e))
+                .wrapping_add(ch)
+                .wrapping_add(k)
+                .wrapping_add(w);
+            let temp2 = F::big_sigma0(*a).wrapping_add(maj);
+
+            *h = *g;
+            *g = *f;
+            *f = *e;
+            *e = (*d).wrapping_add(temp1);
+            *d = *c;
+            *c = *b;
+            *b = *a;
+            *a = temp1.wrapping_add(temp2);
+        }
+
         let mut w = [Self::Word::ZERO; 16];
-        let mut i = 0;
-        while i < 16 {
-            w[i] = Self::Word::from_be_bytes_at(block, i);
-            i += 1;
+        for (i, slot) in w.iter_mut().enumerate() {
+            *slot = Self::Word::from_be_bytes_at(block, i);
         }
 
         let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = *state;
 
-        i = 0;
+        let mut i = 0;
+        while i < 16 {
+            round::<Self::Word, Self>(
+                w[i & 0xf],
+                Self::K[i],
+                &mut a,
+                &mut b,
+                &mut c,
+                &mut d,
+                &mut e,
+                &mut f,
+                &mut g,
+                &mut h,
+            );
+            i += 1;
+        }
+
         while i < Self::ROUNDS {
-            if i >= 16 {
-                let s0 = Self::small_sigma0(w[(i + 1) & 0xf]);
-                let s1 = Self::small_sigma1(w[(i + 14) & 0xf]);
-                w[i & 0xf] = w[i & 0xf]
-                    .wrapping_add(s0)
-                    .wrapping_add(w[(i + 9) & 0xf])
-                    .wrapping_add(s1);
-            }
-
-            let ch = (e & f) ^ (!e & g);
-            let maj = (a & b) ^ (a & c) ^ (b & c);
-            let temp1 = h
-                .wrapping_add(Self::big_sigma1(e))
-                .wrapping_add(ch)
-                .wrapping_add(Self::K[i])
-                .wrapping_add(w[i & 0xf]);
-            let temp2 = Self::big_sigma0(a).wrapping_add(maj);
-
-            h = g;
-            g = f;
-            f = e;
-            e = d.wrapping_add(temp1);
-            d = c;
-            c = b;
-            b = a;
-            a = temp1.wrapping_add(temp2);
-
+            let j0 = i & 0xf;
+            let s0 = Self::small_sigma0(w[(i + 1) & 0xf]);
+            let s1 = Self::small_sigma1(w[(i + 14) & 0xf]);
+            w[j0] = w[j0]
+                .wrapping_add(s0)
+                .wrapping_add(w[(i + 9) & 0xf])
+                .wrapping_add(s1);
+            round::<Self::Word, Self>(
+                w[j0],
+                Self::K[i],
+                &mut a,
+                &mut b,
+                &mut c,
+                &mut d,
+                &mut e,
+                &mut f,
+                &mut g,
+                &mut h,
+            );
             i += 1;
         }
 
@@ -143,19 +182,19 @@ impl ShaFamily for Sha2_32 {
         0xc67178f2,
     ];
 
-    #[inline]
+    #[inline(always)]
     fn small_sigma0(x: u32) -> u32 {
         x.rotate_right(7) ^ x.rotate_right(18) ^ (x >> 3)
     }
-    #[inline]
+    #[inline(always)]
     fn small_sigma1(x: u32) -> u32 {
         x.rotate_right(17) ^ x.rotate_right(19) ^ (x >> 10)
     }
-    #[inline]
+    #[inline(always)]
     fn big_sigma0(x: u32) -> u32 {
         x.rotate_right(2) ^ x.rotate_right(13) ^ x.rotate_right(22)
     }
-    #[inline]
+    #[inline(always)]
     fn big_sigma1(x: u32) -> u32 {
         x.rotate_right(6) ^ x.rotate_right(11) ^ x.rotate_right(25)
     }
@@ -271,19 +310,19 @@ impl ShaFamily for Sha2_64 {
         0x6c44198c4a475817,
     ];
 
-    #[inline]
+    #[inline(always)]
     fn small_sigma0(x: u64) -> u64 {
         x.rotate_right(1) ^ x.rotate_right(8) ^ (x >> 7)
     }
-    #[inline]
+    #[inline(always)]
     fn small_sigma1(x: u64) -> u64 {
         x.rotate_right(19) ^ x.rotate_right(61) ^ (x >> 6)
     }
-    #[inline]
+    #[inline(always)]
     fn big_sigma0(x: u64) -> u64 {
         x.rotate_right(28) ^ x.rotate_right(34) ^ x.rotate_right(39)
     }
-    #[inline]
+    #[inline(always)]
     fn big_sigma1(x: u64) -> u64 {
         x.rotate_right(14) ^ x.rotate_right(18) ^ x.rotate_right(41)
     }

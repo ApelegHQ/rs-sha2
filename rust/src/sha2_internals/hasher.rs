@@ -84,6 +84,7 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
     }
 
     /// Feed data into the hasher.  May be called repeatedly.
+    #[inline]
     pub fn update(&mut self, data: &[u8]) {
         self.total_len += data.len() as u128;
         let mut offset = 0;
@@ -102,19 +103,21 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
             }
         }
 
-        while offset + B <= data.len() {
-            self.engine.compress(&data[offset..offset + B]);
-            offset += B;
+        let tail = &data[offset..];
+        let mut chunks = tail.chunks_exact(B);
+        for chunk in &mut chunks {
+            self.engine.compress(chunk);
         }
 
-        let remaining = data.len() - offset;
-        if remaining > 0 {
-            self.buffer[..remaining].copy_from_slice(&data[offset..]);
-            self.buffer_len = remaining;
+        let remainder = chunks.remainder();
+        if !remainder.is_empty() {
+            self.buffer[..remainder.len()].copy_from_slice(remainder);
+            self.buffer_len = remainder.len();
         }
     }
 
     /// Finalize and return the digest.
+    #[inline]
     pub fn finalize(&mut self) -> [u8; D] {
         type F<V> = <V as ShaVariant>::Family;
         let pad_threshold = B - <F<V> as ShaFamily>::LEN_BYTES;
@@ -125,21 +128,13 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
 
         // If no room for the length field, flush an extra block.
         if self.buffer_len > pad_threshold {
-            let mut i = self.buffer_len;
-            while i < B {
-                self.buffer[i] = 0;
-                i += 1;
-            }
+            self.buffer[self.buffer_len..B].fill(0);
             self.engine.compress(&self.buffer);
             self.buffer_len = 0;
         }
 
         // Zero-fill up to the length field.
-        let mut i = self.buffer_len;
-        while i < pad_threshold {
-            self.buffer[i] = 0;
-            i += 1;
-        }
+        self.buffer[self.buffer_len..pad_threshold].fill(0);
 
         // Append bit-length in big-endian.
         <F<V>>::encode_bit_len(self.total_len, &mut self.buffer[pad_threshold..]);
@@ -158,6 +153,7 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
 
     /// One-shot convenience.
     #[cfg(feature = "sync")]
+    #[inline]
     pub fn digest(data: &[u8]) -> [u8; D] {
         let mut h = Self::new();
         h.update(data);
