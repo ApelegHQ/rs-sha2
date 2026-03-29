@@ -58,7 +58,7 @@ checksum = "5d20789868f4b01b2f2caec9f5c4e0213b41e3e5702a50157d699ae31ced2fcb"
 
 [[package]]
 name = "c-sha2"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "cbindgen",
  "sha2",
@@ -622,7 +622,7 @@ dependencies = [
 
 [[package]]
 name = "sha2"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "criterion",
 ]
@@ -815,7 +815,7 @@ dependencies = [
 
 [[package]]
 name = "wasm-sha2"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "c-sha2",
  "wee_alloc",
