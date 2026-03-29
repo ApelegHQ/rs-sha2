@@ -26,11 +26,12 @@ test = false
 doctest = false
 
 [features]
-default = ["sha256", "deserialize", "serialize"]
+default = ["sha256", "sha2-compress-unrolled", "deserialize", "serialize"]
 deserialize = ["c-sha2/deserialize"]
 serialize = ["c-sha2/serialize"]
 sha224 = ["c-sha2/sha224"]
 sha256 = ["c-sha2/sha256"]
+sha2-compress-unrolled = ["c-sha2/sha2-compress-unrolled"]
 sha384 = ["c-sha2/sha384"]
 sha512_256 = ["c-sha2/sha512_256"]
 sha512 = ["c-sha2/sha512"]

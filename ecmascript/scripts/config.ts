@@ -49,6 +49,7 @@ export const CARGO_CONFIG = {
 export type Feature =
 	| 'sha224'
 	| 'sha256'
+	| 'sha2-compress-unrolled'
 	| 'sha384'
 	| 'sha512'
 	| 'sha512_256'

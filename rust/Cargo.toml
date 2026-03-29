@@ -14,11 +14,18 @@ path = "src/lib.rs"
 crate-type = ["rlib"]
 
 [features]
-default = ["streaming", "sha256", "deserialize", "serialize"]
+default = [
+    "streaming",
+    "sha256",
+    "deserialize",
+    "serialize",
+    "sha2-compress-unrolled",
+]
 deserialize = []
 serialize = []
 sha224 = []
 sha256 = []
+sha2-compress-unrolled = []
 sha384 = []
 sha512 = []
 sha512_256 = []

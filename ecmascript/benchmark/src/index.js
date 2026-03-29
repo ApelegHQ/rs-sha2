@@ -39,7 +39,7 @@ const WARMUP_ITERATIONS = 64;
 
 // Utility functions
 function println(s) {
-	process.stdout.write(s + '\n');
+	process.stdout.write(s.trimEnd() + '\n');
 }
 
 function formatBytes(bytes) {
@@ -224,7 +224,7 @@ async function runBenchmark() {
 		println(`\nBuffer Size: ${formattedSize} | Iterations: ${ITERATIONS}`);
 		println('-'.repeat(80));
 		println(
-			`${'Package'.padEnd(27)} ${'Time (ms)'.padEnd(15)} ${'Ops/s'.padEnd(11)} ${'MiB/s'.padEnd(10)} ${'Relative'.padEnd(10)}`.trimEnd(),
+			`${'Package'.padEnd(27)} ${'Time (ms)'.padEnd(15)} ${'Ops/s'.padEnd(11)} ${'MiB/s'.padEnd(10)} ${'Relative'.padEnd(10)}`,
 		);
 		println('-'.repeat(80));
 

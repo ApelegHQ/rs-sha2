@@ -31,13 +31,22 @@ import { convertWasmToJs } from './wasm2js.js';
 /** Run every build step for a single feature combination. */
 async function buildVariant(featureSet: IFeatureSet): Promise<void> {
 	console.log('  Compiling Rust → WASM …');
-	const wasmPath = await buildCargo(featureSet);
+
+	const clonedFeatureSet = structuredClone(featureSet);
+	clonedFeatureSet.features.push('sha2-compress-unrolled');
+	clonedFeatureSet.slug = clonedFeatureSet.slug + '+sha2-compress-unrolled';
+
+	const wasmPathUnrolled = await buildCargo(clonedFeatureSet);
+	const wasmPathCompact = await buildCargo(featureSet);
 
 	console.log('  Bundling & formatting (WASM) …');
-	const wrappedPathWasm = await bundleWrapperWasm(featureSet, wasmPath);
+	const wrappedPathWasm = await bundleWrapperWasm(
+		featureSet,
+		wasmPathUnrolled,
+	);
 
 	console.log('  Converting WASM → JS …');
-	const { wasmJsPath } = await convertWasmToJs(wasmPath, featureSet);
+	const { wasmJsPath } = await convertWasmToJs(wasmPathCompact, featureSet);
 
 	console.log('  Bundling & formatting …');
 	const wrappedPathEcmascript = await bundleWrapperEcmascript(

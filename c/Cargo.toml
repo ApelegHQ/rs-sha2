@@ -26,11 +26,12 @@ test = false
 doctest = false
 
 [features]
-default = ["sha256", "streaming", "deserialize", "serialize"]
+default = ["sha256", "sha2-compress-unrolled", "streaming", "deserialize", "serialize"]
 deserialize = ["sha2/deserialize"]
 serialize = ["sha2/serialize"]
 sha224 = ["sha2/sha224"]
 sha256 = ["sha2/sha256"]
+sha2-compress-unrolled = ["sha2/sha2-compress-unrolled"]
 sha384 = ["sha2/sha384"]
 sha512_256 = ["sha2/sha512_256"]
 sha512 = ["sha2/sha512"]
@@ -39,7 +40,7 @@ streaming = ["sha2/streaming"]
 sync = ["sha2/sync"]
 
 [dependencies]
-sha2 = { path = "../rust" }
+sha2 = { path = "../rust", default-features = false, features = [] }
 
 [build-dependencies]
 cbindgen = { version = "=0.29.2",  default-features = false }
