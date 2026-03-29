@@ -19,10 +19,6 @@
 
 #include "rsp_parser.h"
 
-#ifndef HAVE_GETLINE
-#error "getline is currently required"
-#endif  /* HAVE_GETLINE */
-
 #ifdef HAVE_GETLINE
 #define _POSIX_C_SOURCE 200809L
 #endif  /* HAVE_GETLINE */
@@ -35,7 +31,62 @@
 /* For ssize_t */
 #include <unistd.h>
 #endif  /* HAVE_UNISTD_H */
+#else
+typedef long ssize_t;
 #endif  /* HAVE_GETLINE */
+
+#ifndef HAVE_GETLINE
+static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
+{
+    size_t pos;
+    int ch;
+    char *new_lineptr;
+
+    if (!lineptr || !n || !stream) return -1;
+
+    if (!*lineptr || *n == 0) {
+        *n = 128;
+        *lineptr = (char*)malloc(*n);
+        if (!*lineptr) return -1;
+    }
+
+    pos = 0;
+    while ((ch = fgetc(stream)) != EOF) {
+        if (pos + 1 >= *n) {
+            size_t new_size = (*n) * 2;
+
+            new_lineptr = (char*)realloc(*lineptr, new_size);
+            if (!new_lineptr) return -1;
+
+            *lineptr = new_lineptr;
+            *n = new_size;
+        }
+
+        (*lineptr)[pos++] = (char)ch;
+        if (ch == '\n') break;
+    }
+
+    if (ferror(stream) || (ch == EOF && pos == 0)) return -1;
+
+    (*lineptr)[pos] = '\0';
+    return (ssize_t)pos;
+}
+
+#define getline compat_getline
+#endif  /* HAVE_GETLINE */
+
+static char *dup_string(const char *src)
+{
+    size_t len;
+    char *dst;
+
+    len = strlen(src) + 1;
+    dst = (char*)malloc(len);
+    if (!dst) return NULL;
+
+    memcpy(dst, src, len);
+    return dst;
+}
 
 /* Helper to convert a hex character to its integer value */
 static int hex_char_to_int(char c)
@@ -195,10 +246,12 @@ vector_file_t* parse_vector_file(const char *file_path)
                 cur_len_bits = atoi(value);
             } else if (strcmp(key, "Msg") == 0) {
                 free(cur_msg_str);
-                cur_msg_str = strdup(value);
+                cur_msg_str = dup_string(value);
+                if (!cur_msg_str) goto error;
             } else if (strcmp(key, "MD") == 0) {
                 free(cur_md_str);
-                cur_md_str = strdup(value);
+                cur_md_str = dup_string(value);
+                if (!cur_md_str) goto error;
             }
         }
     }

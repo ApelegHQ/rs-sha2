@@ -80,7 +80,11 @@ pub unsafe extern "C" fn sha512_256_finalize(s: *mut Sha512_256, result_ptr: *mu
 /// C bindings. Caller is responsible for ensuring memory correctness.
 #[cfg(feature = "sync")]
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn sha512_256_digest(data: *const u8, len: usize, result_ptr: *mut u8) -> usize {
+pub unsafe extern "C" fn sha512_256_digest(
+    data: *const u8,
+    len: usize,
+    result_ptr: *mut u8,
+) -> usize {
     if !result_ptr.is_null() {
         let data = unsafe { ::core::slice::from_raw_parts(data, len) };
         let result_buf =
@@ -113,7 +117,10 @@ pub unsafe extern "C" fn sha512_256_serialize(s: *const Sha512_256, result_ptr: 
 /// C bindings. Caller is responsible for ensuring memory correctness.
 #[cfg(all(feature = "streaming", feature = "deserialize"))]
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn sha512_256_deserialize(state: *const Sha512_256State, s: *mut Sha512_256) -> usize {
+pub unsafe extern "C" fn sha512_256_deserialize(
+    state: *const Sha512_256State,
+    s: *mut Sha512_256,
+) -> usize {
     if !s.is_null() {
         let state = unsafe { &*state };
         let s = unsafe { &mut *s };

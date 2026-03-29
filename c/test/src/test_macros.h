@@ -32,6 +32,9 @@ typedef struct {
     vector_file_t *vf;
 } test_state_t;
 
+#define TEST_MACROS_CONCAT_IMPL_(a, b) a##b
+#define TEST_MACROS_CONCAT_(a, b) TEST_MACROS_CONCAT_IMPL_(a, b)
+
 /**
  * @brief Main macro to define a complete test group for a SHA algorithm and a vector file.
  *
@@ -134,6 +137,6 @@ typedef struct {
         }; \
         return cmocka_run_group_tests(tests, GROUP_NAME##_setup, GROUP_NAME##_teardown); \
     } \
-    extern void DEFINE_SHA_TEST_GROUP__require_semicolon__##__LINE__
+    extern int TEST_MACROS_CONCAT_(DEFINE_SHA_TEST_GROUP__require_semicolon__, __LINE__)
 
 #endif /* TEST_MACROS_H */

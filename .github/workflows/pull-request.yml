@@ -52,25 +52,41 @@ jobs:
         name: 'Test with all features'
       - run: cargo build --all-features
         name: 'Build with all features'
-        if: ${{ matrix.os == '_macos-latest' || matrix.os == 'ubuntu-latest' }}
       - run: sudo apt-get install -y libcmocka-dev
         name: 'Install cmocka (Ubuntu)'
         if: ${{ matrix.os == 'ubuntu-latest' }}
-      - run: brew install cmocka
-        name: 'Install cmocka (macOS)'
-        if: ${{ matrix.os == '_macos-latest' }}
-      - run: cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
-        name: 'Create CMake build system'
-        working-directory: ./c/test/build
-        if: ${{ matrix.os == '_macos-latest' || matrix.os == 'ubuntu-latest' }}
-      - run: cmake --build build
-        name: 'Build C binding tests'
-        working-directory: ./c/test
-        if: ${{ matrix.os == '_macos-latest' || matrix.os == 'ubuntu-latest' }}
-      - run: ../c/test/build/src/sha2_cavs_tests
-        name: 'Run C binding tests'
+      - name: 'Download and build cmocka from source'
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'windows-latest' || matrix.os == 'windows-11-arm' }}
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri 'https://cmocka.org/files/1.1/cmocka-1.1.8.tar.xz' -OutFile "$env:GITHUB_WORKSPACE/cmocka.tar.xz"
+          $hash = (Get-FileHash "$env:GITHUB_WORKSPACE/cmocka.tar.xz" -Algorithm SHA384).Hash.ToLower()
+          if ($hash -ne '5f50b2e900a68b4340d5b0de09602e69428a56fe47722f4f6a6c81d16bfc7c869e2f19b5d72806a1d5d715329affb1c2') {
+            throw "SHA-384 mismatch: $hash"
+          }
+          cmake -E tar xf "$env:GITHUB_WORKSPACE/cmocka.tar.xz"
+          cmake -S "$env:GITHUB_WORKSPACE/cmocka-1.1.8" -B "$env:GITHUB_WORKSPACE/cmocka-build" -DCMAKE_INSTALL_PREFIX="$env:GITHUB_WORKSPACE/cmocka-install" -DWITH_EXAMPLES=OFF
+          cmake --build "$env:GITHUB_WORKSPACE/cmocka-build" --config Release
+          cmake --install "$env:GITHUB_WORKSPACE/cmocka-build" --config Release
+      - name: 'Build and run C binding tests'
+        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' || matrix.os == 'windows-11-arm' }}
+        shell: pwsh
         working-directory: ./ecmascript
-        if: ${{ matrix.os == '_macos-latest' || matrix.os == 'ubuntu-latest' }}
+        run: |
+          if ('${{ matrix.os }}'.StartsWith('windows')) {
+            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/c/test/build" --config Debug
+            $env:PATH = "$env:GITHUB_WORKSPACE\cmocka-install\bin;$env:GITHUB_WORKSPACE\target\debug;$env:PATH"
+            & "$env:GITHUB_WORKSPACE/c/test/build/src/Debug/sha2_cavs_tests.exe"
+          } elseif ('${{ matrix.os }}' -eq 'macos-latest') {
+            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/c/test/build"
+            & "$env:GITHUB_WORKSPACE/c/test/build/src/sha2_cavs_tests"
+          } else {
+            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/c/test/build"
+            & "$env:GITHUB_WORKSPACE/c/test/build/src/sha2_cavs_tests"
+          }
       - run: rustup target add wasm32v1-none
       - run: npm ci
         working-directory: ./ecmascript

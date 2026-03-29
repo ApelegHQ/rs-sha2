@@ -77,7 +77,3 @@ pub use crate::sha2_internals::{Sha512, Sha512Cfg};
 pub use crate::sha2_internals::Sha512_256State;
 #[cfg(feature = "sha512_256")]
 pub use crate::sha2_internals::{Sha512_256, Sha512_256Cfg};
-
-pub fn x() {
-    let _ = Sha256State::from(Sha256::new());
-}

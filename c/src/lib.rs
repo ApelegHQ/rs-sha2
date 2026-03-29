@@ -60,13 +60,13 @@ mod exports {
 }
 
 #[cfg(all(
-        any(
-            feature = "sha224",
-            feature = "sha256",
-            feature = "sha384",
-            feature = "sha512",
-            feature = "sha512_256"
-        ),
-    any(feature = "streaming", feature = "sync"))
-)]
+    any(
+        feature = "sha224",
+        feature = "sha256",
+        feature = "sha384",
+        feature = "sha512",
+        feature = "sha512_256"
+    ),
+    any(feature = "streaming", feature = "sync")
+))]
 pub use exports::*;
