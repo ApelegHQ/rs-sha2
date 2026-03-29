@@ -44,7 +44,7 @@ impl ShaWord for u32 {
     #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 4;
-        u32::from_be_bytes(src[j..j + 4].try_into().unwrap())
+        u32::from_be_bytes([src[j], src[j + 1], src[j + 2], src[j + 3]])
     }
 
     #[inline(always)]
@@ -72,7 +72,16 @@ impl ShaWord for u64 {
     #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 8;
-        u64::from_be_bytes(src[j..j + 8].try_into().unwrap())
+        u64::from_be_bytes([
+            src[j],
+            src[j + 1],
+            src[j + 2],
+            src[j + 3],
+            src[j + 4],
+            src[j + 5],
+            src[j + 6],
+            src[j + 7],
+        ])
     }
 
     #[inline(always)]

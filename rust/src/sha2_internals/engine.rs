@@ -46,7 +46,7 @@ impl<F: ShaFamily> ShaEngine<F> {
         Self { words: iv }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn compress(&mut self, block: &[u8]) {
         F::compress(&mut self.words, block);
     }

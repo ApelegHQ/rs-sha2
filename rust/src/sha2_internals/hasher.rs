@@ -84,7 +84,7 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
     }
 
     /// Feed data into the hasher.  May be called repeatedly.
-    #[inline]
+    #[inline(always)]
     pub fn update(&mut self, data: &[u8]) {
         self.total_len += data.len() as u128;
         let mut offset = 0;
@@ -103,13 +103,12 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
             }
         }
 
-        let tail = &data[offset..];
-        let mut chunks = tail.chunks_exact(B);
-        for chunk in &mut chunks {
-            self.engine.compress(chunk);
+        while offset + B <= data.len() {
+            self.engine.compress(&data[offset..offset + B]);
+            offset += B;
         }
 
-        let remainder = chunks.remainder();
+        let remainder = &data[offset..];
         if !remainder.is_empty() {
             self.buffer[..remainder.len()].copy_from_slice(remainder);
             self.buffer_len = remainder.len();
@@ -117,7 +116,7 @@ impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {
     }
 
     /// Finalize and return the digest.
-    #[inline]
+    #[inline(always)]
     pub fn finalize(&mut self) -> [u8; D] {
         type F<V> = <V as ShaVariant>::Family;
         let pad_threshold = B - <F<V> as ShaFamily>::LEN_BYTES;

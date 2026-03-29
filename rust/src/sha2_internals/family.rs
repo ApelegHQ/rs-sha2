@@ -64,6 +64,8 @@ pub trait ShaFamily: 'static {
     /// Compress one block (`BLOCK_BYTES` bytes) into the 8-word chaining state.
     #[inline(always)]
     fn compress(state: &mut [Self::Word; 8], block: &[u8]) {
+        assert!(block.len() >= Self::BLOCK_BYTES);
+
         macro_rules! round {
             ($a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $w:expr, $k:expr) => {{
                 let ch = $g ^ ($e & ($f ^ $g));
@@ -81,8 +83,10 @@ pub trait ShaFamily: 'static {
         }
 
         let mut w = [Self::Word::ZERO; 16];
-        for (i, slot) in w.iter_mut().enumerate() {
-            *slot = Self::Word::from_be_bytes_at(block, i);
+        let mut j = 0;
+        while j < 16 {
+            w[j] = Self::Word::from_be_bytes_at(block, j);
+            j += 1;
         }
 
         let [mut a, mut b, mut c, mut d, mut e, mut f, mut g, mut h] = *state;
@@ -106,50 +110,57 @@ pub trait ShaFamily: 'static {
                 .wrapping_add(Self::small_sigma0(w[(i + 1) & 0xf]))
                 .wrapping_add(w[(i + 9) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 14) & 0xf]));
+            round!(a, b, c, d, e, f, g, h, w[j0], Self::K[i]);
+
             let j1 = (i + 1) & 0xf;
             w[j1] = w[j1]
                 .wrapping_add(Self::small_sigma0(w[(i + 2) & 0xf]))
                 .wrapping_add(w[(i + 10) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 15) & 0xf]));
+            round!(h, a, b, c, d, e, f, g, w[j1], Self::K[i + 1]);
+
             let j2 = (i + 2) & 0xf;
             w[j2] = w[j2]
                 .wrapping_add(Self::small_sigma0(w[(i + 3) & 0xf]))
                 .wrapping_add(w[(i + 11) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[i & 0xf]));
+            round!(g, h, a, b, c, d, e, f, w[j2], Self::K[i + 2]);
+
             let j3 = (i + 3) & 0xf;
             w[j3] = w[j3]
                 .wrapping_add(Self::small_sigma0(w[(i + 4) & 0xf]))
                 .wrapping_add(w[(i + 12) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 1) & 0xf]));
+            round!(f, g, h, a, b, c, d, e, w[j3], Self::K[i + 3]);
+
             let j4 = (i + 4) & 0xf;
             w[j4] = w[j4]
                 .wrapping_add(Self::small_sigma0(w[(i + 5) & 0xf]))
                 .wrapping_add(w[(i + 13) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 2) & 0xf]));
+            round!(e, f, g, h, a, b, c, d, w[j4], Self::K[i + 4]);
+
             let j5 = (i + 5) & 0xf;
             w[j5] = w[j5]
                 .wrapping_add(Self::small_sigma0(w[(i + 6) & 0xf]))
                 .wrapping_add(w[(i + 14) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 3) & 0xf]));
+            round!(d, e, f, g, h, a, b, c, w[j5], Self::K[i + 5]);
+
             let j6 = (i + 6) & 0xf;
             w[j6] = w[j6]
                 .wrapping_add(Self::small_sigma0(w[(i + 7) & 0xf]))
                 .wrapping_add(w[(i + 15) & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 4) & 0xf]));
+            round!(c, d, e, f, g, h, a, b, w[j6], Self::K[i + 6]);
+
             let j7 = (i + 7) & 0xf;
             w[j7] = w[j7]
                 .wrapping_add(Self::small_sigma0(w[(i + 8) & 0xf]))
-                .wrapping_add(w[(i + 0x10) & 0xf])
+                .wrapping_add(w[i & 0xf])
                 .wrapping_add(Self::small_sigma1(w[(i + 5) & 0xf]));
-
-            round!(a, b, c, d, e, f, g, h, w[j0], Self::K[i]);
-            round!(h, a, b, c, d, e, f, g, w[j1], Self::K[i + 1]);
-            round!(g, h, a, b, c, d, e, f, w[j2], Self::K[i + 2]);
-            round!(f, g, h, a, b, c, d, e, w[j3], Self::K[i + 3]);
-            round!(e, f, g, h, a, b, c, d, w[j4], Self::K[i + 4]);
-            round!(d, e, f, g, h, a, b, c, w[j5], Self::K[i + 5]);
-            round!(c, d, e, f, g, h, a, b, w[j6], Self::K[i + 6]);
             round!(b, c, d, e, f, g, h, a, w[j7], Self::K[i + 7]);
+
             i += 8;
         }
 
