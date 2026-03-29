@@ -44,17 +44,13 @@ impl ShaWord for u32 {
     #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 4;
-        u32::from_be_bytes([src[j], src[j + 1], src[j + 2], src[j + 3]])
+        u32::from_be_bytes(src[j..j + 4].try_into().unwrap())
     }
 
     #[inline(always)]
     fn to_be_bytes_at(self, dst: &mut [u8], i: usize) {
         let j = i * 4;
-        let b = self.to_be_bytes();
-        dst[j] = b[0];
-        dst[j + 1] = b[1];
-        dst[j + 2] = b[2];
-        dst[j + 3] = b[3];
+        dst[j..j + 4].copy_from_slice(&self.to_be_bytes());
     }
 
     /*
@@ -76,30 +72,13 @@ impl ShaWord for u64 {
     #[inline(always)]
     fn from_be_bytes_at(src: &[u8], i: usize) -> Self {
         let j = i * 8;
-        u64::from_be_bytes([
-            src[j],
-            src[j + 1],
-            src[j + 2],
-            src[j + 3],
-            src[j + 4],
-            src[j + 5],
-            src[j + 6],
-            src[j + 7],
-        ])
+        u64::from_be_bytes(src[j..j + 8].try_into().unwrap())
     }
 
     #[inline(always)]
     fn to_be_bytes_at(self, dst: &mut [u8], i: usize) {
         let j = i * 8;
-        let b = self.to_be_bytes();
-        dst[j] = b[0];
-        dst[j + 1] = b[1];
-        dst[j + 2] = b[2];
-        dst[j + 3] = b[3];
-        dst[j + 4] = b[4];
-        dst[j + 5] = b[5];
-        dst[j + 6] = b[6];
-        dst[j + 7] = b[7];
+        dst[j..j + 8].copy_from_slice(&self.to_be_bytes());
     }
 
     /*
