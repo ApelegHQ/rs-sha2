@@ -15,10 +15,12 @@
 
 import { execFile, spawn } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
+import process from 'node:process';
 
 export interface IExecOptions {
 	cwd?: string;
 	env?: Record<string, string>;
+	shell?: string | boolean;
 }
 
 export interface IExecResult {
@@ -41,8 +43,12 @@ export function exec(
 			args,
 			{
 				cwd: options?.cwd,
-				env: { ...process.env, ...options?.env },
+				env: {
+					...process.env,
+					...options?.env,
+				},
 				maxBuffer: 50 * 1024 * 1024,
+				shell: options?.shell,
 			},
 			(error, stdout, stderr) => {
 				if (error) {
@@ -66,13 +72,17 @@ export function exec(
 export function execInherit(
 	command: string,
 	args: string[],
-	options?: { cwd?: string; env?: Record<string, string> },
+	options?: IExecOptions,
 ): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const child = spawn(command, args, {
 			cwd: options?.cwd,
-			env: { ...process.env, ...options?.env },
+			env: {
+				...process.env,
+				...options?.env,
+			},
 			stdio: 'inherit',
+			shell: options?.shell,
 		});
 		child.on('error', reject);
 		child.on('close', (code) => {

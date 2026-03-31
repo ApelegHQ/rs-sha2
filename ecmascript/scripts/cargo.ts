@@ -14,6 +14,7 @@
  */
 
 import { join } from 'node:path';
+import process from 'node:process';
 import { BUILD_DIR, CARGO_CONFIG, WORKSPACE_DIR } from './config.js';
 import { exec } from './utils/exec.js';
 import type { IFeatureSet } from './utils/features.js';

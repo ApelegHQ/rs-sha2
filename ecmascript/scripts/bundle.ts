@@ -16,6 +16,7 @@
 import { readFile } from 'node:fs/promises';
 import { join, relative, sep } from 'node:path';
 import { sep as posixSep } from 'node:path/posix';
+import process from 'node:process';
 import { BUILD_DIR } from './config.js';
 import { bundleWrapperFactory } from './utils/bundle-factory.js';
 import { type IFeatureSet } from './utils/features.js';
@@ -91,8 +92,6 @@ export async function bundleWrapperWasm(
 	wasmPath: string,
 ): Promise<string> {
 	const outfile = join(BUILD_DIR, `${featureSet.slug}.wrapped.wasm.js`);
-
-	void wasmPath;
 
 	return bundleWrapperFactory(outfile, [
 		{

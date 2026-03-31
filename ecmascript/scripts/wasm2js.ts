@@ -37,17 +37,23 @@ export async function convertWasmToJs(
 	const symbolsPath = join(BUILD_DIR, `${featureSet.slug}.symbols.json`);
 
 	// --- run wasm2js -----------------------------------------------------------
-	await exec(WASM2JS_BIN, [
-		'-O4',
-		'--deterministic',
-		'--vacuum',
-		'--disable-mutable-globals',
-		'--pedantic',
-		'--emscripten',
-		'--output',
-		wasmJsPath,
-		wasmPath,
-	]);
+	await exec(
+		WASM2JS_BIN,
+		[
+			'-O4',
+			'--deterministic',
+			'--vacuum',
+			'--disable-mutable-globals',
+			'--pedantic',
+			'--emscripten',
+			'--output',
+			wasmJsPath,
+			wasmPath,
+		],
+		{
+			shell: process.platform === 'win32',
+		},
+	);
 
 	// --- patch -----------------------------------------------------------------
 	let content = await readFile(wasmJsPath, 'utf-8');

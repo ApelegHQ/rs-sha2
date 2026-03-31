@@ -12,13 +12,14 @@
 		"skipLibCheck": false,
 		"forceConsistentCasingInFileNames": true,
 		"resolveJsonModule": false,
-		"lib": ["ES2021"],
+		"lib": ["ES2021", "dom"],
+		"types": ["node"],
 		"declaration": true
 	},
 	"ts-node": {
 		"experimentalResolver": true
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*", "scripts/**/*"],
 	"exclude": [
 		"node_modules",
 		"build"

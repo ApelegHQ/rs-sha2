@@ -14,6 +14,7 @@
  */
 
 import { dirname, join, resolve } from 'node:path';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 /* eslint-disable @typescript-eslint/naming-convention */

@@ -16,7 +16,8 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { dirname, join } from 'node:path';
-import { exec, type IExecResult, type IExecOptions } from './exec.js';
+import process from 'node:process';
+import { exec, type IExecOptions, type IExecResult } from './exec.js';
 
 const npm = (args: string[], options?: IExecOptions): Promise<IExecResult> => {
 	if (process.platform !== 'win32') {

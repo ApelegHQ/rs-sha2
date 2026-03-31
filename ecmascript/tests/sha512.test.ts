@@ -17,13 +17,76 @@ import getSha2Instance from './get-sha2-instance.js';
 import loadVectors from './load-vectors.js';
 import testsFactory from './tests-factory.js';
 
-const sha2 = await getSha2Instance();
+const sha2Esm = await getSha2Instance();
+const sha2Cjs = await getSha2Instance(undefined, true);
+const sha2WasmEsm = await getSha2Instance('wasm', false);
+const sha2WasmCjs = await getSha2Instance('wasm', false);
 
-const skip = !sha2.sha512;
-const getInstance = () => sha2.sha512();
+const skip = !sha2Esm.sha512;
+const getEsmInstance = () => sha2Esm.sha512();
+const getCjsInstance = () => sha2Cjs.sha512();
+const getWasmEsmInstance = () => sha2WasmEsm.sha512();
+const getWasmCjsInstance = () => sha2WasmCjs.sha512();
 
 const shortMsgVectors = loadVectors('SHA512ShortMsg.rsp');
 const longMsgVectors = loadVectors('SHA512LongMsg.rsp');
 
-testsFactory('SHA-512', getInstance, 'NIST ShortMsg', shortMsgVectors, skip);
-testsFactory('SHA-512', getInstance, 'NIST LongMsg', longMsgVectors, skip);
+testsFactory(
+	'SHA-512 (ES+ESM)',
+	getEsmInstance,
+	'NIST ShortMsg',
+	shortMsgVectors,
+	skip,
+);
+testsFactory(
+	'SHA-512 (ES+ESM)',
+	getEsmInstance,
+	'NIST LongMsg',
+	longMsgVectors,
+	skip,
+);
+
+testsFactory(
+	'SHA-512 (ES+CJS)',
+	getCjsInstance,
+	'NIST ShortMsg',
+	shortMsgVectors,
+	skip,
+);
+testsFactory(
+	'SHA-512 (ES+CJS)',
+	getCjsInstance,
+	'NIST LongMsg',
+	longMsgVectors,
+	skip,
+);
+
+testsFactory(
+	'SHA-512 (WASM+ESM)',
+	getWasmEsmInstance,
+	'NIST ShortMsg',
+	shortMsgVectors,
+	skip,
+);
+testsFactory(
+	'SHA-512 (WASM+ESM)',
+	getWasmEsmInstance,
+	'NIST LongMsg',
+	longMsgVectors,
+	skip,
+);
+
+testsFactory(
+	'SHA-512 (WASM+CJS)',
+	getWasmCjsInstance,
+	'NIST ShortMsg',
+	shortMsgVectors,
+	skip,
+);
+testsFactory(
+	'SHA-512 (WASM+CJS)',
+	getWasmCjsInstance,
+	'NIST LongMsg',
+	longMsgVectors,
+	skip,
+);

@@ -13,6 +13,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+import process from 'node:process';
 import type { Feature } from '../config.js';
 
 /** A resolved set of features with derived naming strings. */

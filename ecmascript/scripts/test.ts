@@ -15,6 +15,7 @@
 
 import { cp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
+import process from 'node:process';
 import { pathToFileURL } from 'node:url';
 import { DIST_DIR, PACKAGE_DIR, SCRIPTS_DIR } from './config.js';
 import { ensureDir, execInherit } from './utils/exec.js';

@@ -13,6 +13,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+import process from 'node:process';
 import { bundleWrapperEcmascript, bundleWrapperWasm } from './bundle.js';
 import { buildCargo } from './cargo.js';
 import { buildCjs } from './cjs.js';
@@ -20,6 +21,7 @@ import { BUILD_DIR, DIST_DIR } from './config.js';
 import { copyAssets } from './copy-assets.js';
 import { generateDeclarations } from './declarations.js';
 import { buildEsm } from './esm.js';
+import { optimizeWasm } from './optimize-wasm.js';
 import { generatePackageJson } from './package-json.js';
 import { ensureDir } from './utils/exec.js';
 import {
@@ -39,14 +41,27 @@ async function buildVariant(featureSet: IFeatureSet): Promise<void> {
 	const wasmPathUnrolled = await buildCargo(clonedFeatureSet);
 	const wasmPathCompact = await buildCargo(featureSet);
 
+	const wasmPathUnrolledOptimized = await optimizeWasm(
+		clonedFeatureSet,
+		wasmPathUnrolled,
+	);
+	const wasmPathCompactOptimized = await optimizeWasm(
+		featureSet,
+		wasmPathCompact,
+		true,
+	);
+
 	console.log('  Bundling & formatting (WASM) …');
 	const wrappedPathWasm = await bundleWrapperWasm(
 		featureSet,
-		wasmPathUnrolled,
+		wasmPathUnrolledOptimized,
 	);
 
 	console.log('  Converting WASM → JS …');
-	const { wasmJsPath } = await convertWasmToJs(wasmPathCompact, featureSet);
+	const { wasmJsPath } = await convertWasmToJs(
+		wasmPathCompactOptimized,
+		featureSet,
+	);
 
 	console.log('  Bundling & formatting …');
 	const wrappedPathEcmascript = await bundleWrapperEcmascript(
