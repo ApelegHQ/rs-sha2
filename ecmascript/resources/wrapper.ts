@@ -35,26 +35,8 @@ import instantiate from 'urn:uuid:2ba445c2-d903-4f19-abd0-c41d2cfd72f1';
 /* eslint-disable no-var */
 /* eslint no-restricted-syntax: ["error", "ArrowFunctionExpression", "ArrayPattern", "RestElement", "Class", "WithStatement", "VariableDeclaration[kind='const']", "VariableDeclaration[kind='let']", "BinaryExpression[operator='in']"] */
 
-// ----------------------------------------------------------------
-// Build-system type augmentations
-// ----------------------------------------------------------------
-
 declare global {
-	/* eslint-disable @typescript-eslint/naming-convention */
-	interface ImportMeta {
-		readonly features: {
-			readonly sha224: boolean;
-			readonly sha256: boolean;
-			readonly sha384: boolean;
-			readonly sha512: boolean;
-			readonly sha512_256: boolean;
-			readonly serialize: boolean;
-			readonly deserialize: boolean;
-		};
-	}
-
 	var DEFAULT_EXPORT: unknown;
-	/* eslint-enable @typescript-eslint/naming-convention */
 }
 
 // ----------------------------------------------------------------
@@ -150,56 +132,6 @@ type Sha2ProtoFactories<T extends HashInstanceConstructors> = {
 	/** Factory for SHA-512/256 instances. */
 	['sha512_256']: T;
 };
-
-// ----------------------------------------------------------------
-// WASM function type aliases
-// ----------------------------------------------------------------
-
-type WasmInit = (ptr: number) => number;
-type WasmUpdate = (statePtr: number, dataPtr: number, dataLen: number) => void;
-type WasmFinalize = (statePtr: number, resultPtr: number) => number;
-type WasmReset = (ptr: number) => void;
-type WasmSerialize = (statePtr: number, resultPtr: number) => number;
-type WasmDeserialize = (serializedPtr: number, statePtr: number) => number;
-
-/* eslint-disable @typescript-eslint/naming-convention */
-interface IWasmInstance extends WebAssembly.Instance {
-	exports: {
-		memory: WebAssembly.Memory;
-		__heap_base: WebAssembly.Global;
-		sha224_init: WasmInit;
-		sha224_update: WasmUpdate;
-		sha224_finalize: WasmFinalize;
-		sha224_reset: WasmReset;
-		sha224_serialize: WasmSerialize;
-		sha224_deserialize: WasmDeserialize;
-		sha256_init: WasmInit;
-		sha256_update: WasmUpdate;
-		sha256_finalize: WasmFinalize;
-		sha256_reset: WasmReset;
-		sha256_serialize: WasmSerialize;
-		sha256_deserialize: WasmDeserialize;
-		sha384_init: WasmInit;
-		sha384_update: WasmUpdate;
-		sha384_finalize: WasmFinalize;
-		sha384_reset: WasmReset;
-		sha384_serialize: WasmSerialize;
-		sha384_deserialize: WasmDeserialize;
-		sha512_init: WasmInit;
-		sha512_update: WasmUpdate;
-		sha512_finalize: WasmFinalize;
-		sha512_reset: WasmReset;
-		sha512_serialize: WasmSerialize;
-		sha512_deserialize: WasmDeserialize;
-		sha512_256_init: WasmInit;
-		sha512_256_update: WasmUpdate;
-		sha512_256_finalize: WasmFinalize;
-		sha512_256_reset: WasmReset;
-		sha512_256_serialize: WasmSerialize;
-		sha512_256_deserialize: WasmDeserialize;
-	};
-}
-/* eslint-enable @typescript-eslint/naming-convention */
 
 // ----------------------------------------------------------------
 // Internal helpers
@@ -592,6 +524,8 @@ function initFactory$(
 			return callFactory(function () {
 				streaming = false;
 				reset(alignedHeapBase);
+
+				return instance;
 			}, false);
 		} satisfies HashInstance['reset'];
 		set(instance, 'reset', reset$);
@@ -721,7 +655,7 @@ type Sha2Result = Sha2Factories<string>;
  */
 function sha2(): Promise<Sha2Result> {
 	/** The raw WASM instance obtained from the embedded module. */
-	return instantiate({}).then(function (instance: IWasmInstance) {
+	return instantiate({}).then(function (instance) {
 		var exports = instance.exports;
 		/**
 		 * A `Uint8Array` view over the entire WebAssembly linear memory.
@@ -753,7 +687,7 @@ function sha2(): Promise<Sha2Result> {
 		 */
 		var alignedHeapBase = align128(heapBase);
 
-		/** The returned object mapping algorithm names � factory functions. */
+		/** The returned object mapping algorithm names -> factory functions. */
 		var result: Sha2Result = Object.create(null);
 
 		if (import.meta.features.sha224) {

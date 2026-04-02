@@ -28,10 +28,14 @@ export async function buildCargo(featureSet: IFeatureSet): Promise<string> {
 
 	const rustflags = [
 		process.env.RUSTFLAGS,
-		'-Clink-arg=-z,relro',
+		'-C target-feature=+crt-static',
+		// '-Clink-arg=-z,relro',
+		// '-Clink-arg=-z,now',
 		'-Clink-arg=--no-entry',
 		'-Clink-arg=-static',
 		'-Clink-arg=-v',
+		'-Clink-arg=--initial-memory=1572864',
+		'-Clink-arg=--max-memory=1572864',
 	]
 		.filter(Boolean)
 		.join(' ');
