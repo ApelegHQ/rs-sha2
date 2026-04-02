@@ -20,7 +20,7 @@ edition =  { workspace = true }
 [lib]
 name = "wasm_sha2"
 path = "src/lib.rs"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "staticlib"]
 # See <https://github.com/rust-lang/rust/issues/151083>
 test = false
 doctest = false

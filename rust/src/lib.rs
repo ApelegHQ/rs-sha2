@@ -15,12 +15,6 @@
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
-#[cfg(all(not(feature = "std"), not(test)))]
-#[panic_handler]
-fn panic(_info: &::core::panic::PanicInfo) -> ! {
-    loop {}
-}
-
 #[cfg(all(feature = "std", not(test)))]
 extern crate std;
 

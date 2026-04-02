@@ -25,7 +25,7 @@ add_executable(sha2_cavs_tests
 # Link the test executable against our library and cmocka
 target_link_libraries(sha2_cavs_tests
     PRIVATE
-    c_sha2
+    wasm_sha2
     ${CMOCKA_LIBRARY}
 )
 

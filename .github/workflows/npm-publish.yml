@@ -51,11 +51,11 @@ jobs:
         name: 'Install cmocka (Ubuntu)'
       - run: cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON ..
         name: 'Create CMake build system'
-        working-directory: ./c/test/build
+        working-directory: ./wasm/test/build
       - run: cmake --build build
         name: 'Build C binding tests'
-        working-directory: ./c/test
-      - run: ../c/test/build/src/sha2_cavs_tests
+        working-directory: ./wasm/test
+      - run: ../wasm/test/build/src/sha2_cavs_tests
         name: 'Run C binding tests'
         working-directory: ./ecmascript
       - run: rustup target add wasm32v1-none

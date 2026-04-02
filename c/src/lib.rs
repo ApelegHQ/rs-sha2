@@ -15,25 +15,6 @@
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
-#[cfg(all(
-    not(feature = "std"),
-    not(test),
-    not(all(
-        any(
-            feature = "sha224",
-            feature = "sha256",
-            feature = "sha384",
-            feature = "sha512",
-            feature = "sha512_256"
-        ),
-        any(feature = "streaming", feature = "sync")
-    ))
-))]
-#[panic_handler]
-fn panic(_info: &::core::panic::PanicInfo) -> ! {
-    loop {}
-}
-
 #[cfg(feature = "sha224")]
 mod sha224;
 #[cfg(feature = "sha256")]

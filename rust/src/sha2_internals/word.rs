@@ -13,9 +13,23 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#[cfg(any(
+    feature = "sha224",
+    feature = "sha256",
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_256"
+))]
 use ::core::ops::{BitAnd, BitOr, BitXor, Not, Shr};
 
 /// Abstracts over the SHA-2 word types (`u32` and `u64`).
+#[cfg(any(
+    feature = "sha224",
+    feature = "sha256",
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_256"
+))]
 pub trait ShaWord:
     Copy
     + Clone
@@ -37,6 +51,13 @@ pub trait ShaWord:
     fn wrapping_add(self, rhs: Self) -> Self;
 }
 
+#[cfg(any(
+    feature = "sha224",
+    feature = "sha256",
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_256"
+))]
 impl ShaWord for u32 {
     // const BYTES: usize = 4;
     const ZERO: Self = 0;
@@ -65,6 +86,13 @@ impl ShaWord for u32 {
     }
 }
 
+#[cfg(any(
+    feature = "sha224",
+    feature = "sha256",
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_256"
+))]
 impl ShaWord for u64 {
     // const BYTES: usize = 8;
     const ZERO: Self = 0;

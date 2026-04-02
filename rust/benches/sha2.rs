@@ -13,8 +13,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+use ::core::hint::black_box;
 use ::criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
-use ::std::hint::black_box;
 
 const SIZES: [usize; 4] = [32, 1024, 64 * 1024, 1024 * 1024];
 const STREAMING_CHUNK_SIZE: usize = 1024;

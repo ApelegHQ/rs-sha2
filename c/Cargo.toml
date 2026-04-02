@@ -20,10 +20,7 @@ edition =  { workspace = true }
 [lib]
 name = "c_sha2"
 path = "src/lib.rs"
-crate-type = ["cdylib", "rlib", "staticlib"]
-# See <https://github.com/rust-lang/rust/issues/151083>
-test = false
-doctest = false
+crate-type = ["rlib"]
 
 [features]
 default = ["sha256", "sha2-compress-unrolled", "streaming", "deserialize", "serialize"]

@@ -44,6 +44,7 @@ export async function convertWasmToJs(
 			'--deterministic',
 			'--vacuum',
 			'--disable-mutable-globals',
+			// '--enable-simd',
 			'--pedantic',
 			'--emscripten',
 			'--output',

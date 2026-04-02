@@ -38,7 +38,11 @@ async function buildVariant(featureSet: IFeatureSet): Promise<void> {
 	clonedFeatureSet.features.push('sha2-compress-unrolled');
 	clonedFeatureSet.slug = clonedFeatureSet.slug + '+sha2-compress-unrolled';
 
-	const wasmPathUnrolled = await buildCargo(clonedFeatureSet);
+	const wasmPathUnrolled = await buildCargo(clonedFeatureSet, {
+		bulkMemory: false,
+		multivalue: true,
+		simd128: true,
+	});
 	const wasmPathCompact = await buildCargo(featureSet);
 
 	const wasmPathUnrolledOptimized = await optimizeWasm(

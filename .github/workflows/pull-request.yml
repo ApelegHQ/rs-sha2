@@ -73,18 +73,18 @@ jobs:
         working-directory: ./ecmascript
         run: |
           if ('${{ matrix.os }}'.StartsWith('windows')) {
-            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
-            cmake --build "$env:GITHUB_WORKSPACE/c/test/build" --config Debug
+            cmake -S "$env:GITHUB_WORKSPACE/wasm/test" -B "$env:GITHUB_WORKSPACE/wasm/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/wasm/test/build" --config Debug
             $env:PATH = "$env:GITHUB_WORKSPACE\cmocka-install\bin;$env:GITHUB_WORKSPACE\target\debug;$env:PATH"
-            & "$env:GITHUB_WORKSPACE/c/test/build/src/Debug/sha2_cavs_tests.exe"
+            & "$env:GITHUB_WORKSPACE/wasm/test/build/src/Debug/sha2_cavs_tests.exe"
           } elseif ('${{ matrix.os }}' -eq 'macos-latest') {
-            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
-            cmake --build "$env:GITHUB_WORKSPACE/c/test/build"
-            & "$env:GITHUB_WORKSPACE/c/test/build/src/sha2_cavs_tests"
+            cmake -S "$env:GITHUB_WORKSPACE/wasm/test" -B "$env:GITHUB_WORKSPACE/wasm/test/build" -DCMAKE_PREFIX_PATH="$env:GITHUB_WORKSPACE/cmocka-install" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/wasm/test/build"
+            & "$env:GITHUB_WORKSPACE/wasm/test/build/src/sha2_cavs_tests"
           } else {
-            cmake -S "$env:GITHUB_WORKSPACE/c/test" -B "$env:GITHUB_WORKSPACE/c/test/build" -DCMAKE_VERBOSE_MAKEFILE=ON
-            cmake --build "$env:GITHUB_WORKSPACE/c/test/build"
-            & "$env:GITHUB_WORKSPACE/c/test/build/src/sha2_cavs_tests"
+            cmake -S "$env:GITHUB_WORKSPACE/wasm/test" -B "$env:GITHUB_WORKSPACE/wasm/test/build" -DCMAKE_VERBOSE_MAKEFILE=ON
+            cmake --build "$env:GITHUB_WORKSPACE/wasm/test/build"
+            & "$env:GITHUB_WORKSPACE/wasm/test/build/src/sha2_cavs_tests"
           }
       - run: rustup target add wasm32v1-none
       - run: npm ci
