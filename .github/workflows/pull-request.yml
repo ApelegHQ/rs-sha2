@@ -44,6 +44,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
+            ecmascript/build
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo clippy --all-features
         name: 'Run clippy with all features'
@@ -68,7 +69,6 @@ jobs:
           cmake --build "$env:GITHUB_WORKSPACE/cmocka-build" --config Release
           cmake --install "$env:GITHUB_WORKSPACE/cmocka-build" --config Release
       - name: 'Build and run C binding tests'
-        if: ${{ matrix.os == 'macos-latest' || matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' || matrix.os == 'windows-11-arm' }}
         shell: pwsh
         working-directory: ./ecmascript
         run: |
@@ -86,6 +86,24 @@ jobs:
             cmake --build "$env:GITHUB_WORKSPACE/wasm/test/build"
             & "$env:GITHUB_WORKSPACE/wasm/test/build/src/sha2_cavs_tests"
           }
+      - name: 'Build and run C binding tests (s390x)'
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        working-directory: ./ecmascript
+        run: |
+          set -xe
+          sudo dpkg --add-architecture s390x
+          printf 'Types: deb\nURIs: http://ports.ubuntu.com/ubuntu-ports\nSuites: %s %s-updates\nComponents: main restricted universe\nArchitectures: s390x\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' "$(lsb_release -sc)" "$(lsb_release -sc)" | sudo tee '/etc/apt/sources.list.d/ubuntu-s390x.sources'
+          sudo apt-get update ||:
+          sudo apt-get install -y libcmocka-dev:s390x crossbuild-essential-s390x qemu-user-static
+          rustup target add s390x-unknown-linux-gnu
+          export CARGO_TARGET_S390X_UNKNOWN_LINUX_GNU_LINKER=s390x-linux-gnu-gcc
+          cargo build --frozen --lib --target s390x-unknown-linux-gnu --profile dev --package wasm-sha2 --all-features
+          export CC=s390x-linux-gnu-gcc CXX=s390x-linux-gnu-g++
+          BUILD_DIR="$(mktemp -d)"
+          cmake -S "$GITHUB_WORKSPACE/wasm/test" -B "$BUILD_DIR" -DCMAKE_VERBOSE_MAKEFILE=ON -DCROSS_TARGET=s390x-unknown-linux-gnu
+          cmake --build "$BUILD_DIR"
+          exec qemu-s390x-static "$BUILD_DIR"/src/sha2_cavs_tests
       - run: rustup target add wasm32v1-none
       - run: npm ci
         working-directory: ./ecmascript

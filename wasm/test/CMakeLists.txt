@@ -6,7 +6,12 @@ enable_testing()
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../target/debug)
+set(CROSS_TARGET CACHE STRING "Cross compilation target triple (optional)")
+if(CROSS_TARGET)
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../target/${CROSS_TARGET}/debug)
+else()
+    link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../target/debug)
+endif()
 
 # <flags>
 include(CheckCompilerFlag)
