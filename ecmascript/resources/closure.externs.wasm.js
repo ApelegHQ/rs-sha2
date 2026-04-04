@@ -129,6 +129,31 @@ Object.prototype.sha512_deserialize;
 /**
  * @type {Function}
  */
+Object.prototype.sha512_224_init;
+/**
+ * @type {Function}
+ */
+Object.prototype.sha512_224_update;
+/**
+ * @type {Function}
+ */
+Object.prototype.sha512_224_finalize;
+/**
+ * @type {Function}
+ */
+Object.prototype.sha512_224_reset;
+/**
+ * @type {Function}
+ */
+Object.prototype.sha512_224_serialize;
+/**
+ * @type {Function}
+ */
+Object.prototype.sha512_224_deserialize;
+
+/**
+ * @type {Function}
+ */
 Object.prototype.sha512_256_init;
 /**
  * @type {Function}

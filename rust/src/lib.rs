@@ -25,6 +25,7 @@ mod sha2_internals;
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub use crate::sha2_internals::ShaVariant;
@@ -69,7 +70,7 @@ pub use crate::sha2_internals::{Sha512, Sha512Cfg};
     any(feature = "serialize", feature = "deserialize")
 ))]
 pub use crate::sha2_internals::Sha512_224State;
-#[cfg(feature = "sha512")]
+#[cfg(feature = "sha512_224")]
 pub use crate::sha2_internals::{Sha512_224, Sha512_224Cfg};
 
 #[cfg(all(
