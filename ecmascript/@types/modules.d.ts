@@ -55,6 +55,12 @@ interface IWasmInstance extends WebAssembly.Instance {
 		sha512_reset: WasmReset;
 		sha512_serialize: WasmSerialize;
 		sha512_deserialize: WasmDeserialize;
+		sha512_224_init: WasmInit;
+		sha512_224_update: WasmUpdate;
+		sha512_224_finalize: WasmFinalize;
+		sha512_224_reset: WasmReset;
+		sha512_224_serialize: WasmSerialize;
+		sha512_224_deserialize: WasmDeserialize;
 		sha512_256_init: WasmInit;
 		sha512_256_update: WasmUpdate;
 		sha512_256_finalize: WasmFinalize;

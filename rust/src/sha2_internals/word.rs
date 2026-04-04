@@ -18,6 +18,7 @@
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 use ::core::ops::{BitAnd, BitOr, BitXor, Not, Shr};
@@ -28,6 +29,7 @@ use ::core::ops::{BitAnd, BitOr, BitXor, Not, Shr};
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub trait ShaWord:
@@ -56,6 +58,7 @@ pub trait ShaWord:
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 impl ShaWord for u32 {
@@ -91,6 +94,7 @@ impl ShaWord for u32 {
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 impl ShaWord for u64 {

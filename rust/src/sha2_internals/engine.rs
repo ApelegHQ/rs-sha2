@@ -18,6 +18,7 @@
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 use super::{family::ShaFamily, word::ShaWord};
@@ -28,6 +29,7 @@ use super::{family::ShaFamily, word::ShaWord};
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub struct ShaEngine<F: ShaFamily> {
@@ -39,6 +41,7 @@ pub struct ShaEngine<F: ShaFamily> {
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 impl<F: ShaFamily> ShaEngine<F> {

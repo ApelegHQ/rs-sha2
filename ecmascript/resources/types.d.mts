@@ -91,6 +91,8 @@ type Sha2ProtoFactories<T extends HashInstanceConstructors> = {
 	['sha384']: T;
 	/** Factory for SHA-512 instances. */
 	['sha512']: T;
+	/** Factory for SHA-512/224 instances. */
+	['sha512_224']: T;
 	/** Factory for SHA-512/256 instances. */
 	['sha512_256']: T;
 };

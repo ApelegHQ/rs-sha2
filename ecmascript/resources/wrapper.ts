@@ -758,6 +758,23 @@ function sha2(): Promise<Sha2Result> {
 			);
 		}
 
+		if (import.meta.features.sha512_224) {
+			set(
+				result,
+				'sha512_224',
+				initFactory$(
+					heap,
+					alignedHeapBase,
+					exports.sha512_224_init,
+					exports.sha512_224_update,
+					exports.sha512_224_finalize,
+					exports.sha512_224_reset,
+					exports.sha512_224_serialize,
+					exports.sha512_224_deserialize,
+				),
+			);
+		}
+
 		if (import.meta.features.sha512_256) {
 			set(
 				result,

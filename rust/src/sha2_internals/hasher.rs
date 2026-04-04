@@ -18,6 +18,7 @@
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 use {
@@ -34,6 +35,7 @@ use {
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub struct ShaHasher<V: ShaVariant, const BLOCK: usize, const DIGEST: usize> {
@@ -49,6 +51,7 @@ pub struct ShaHasher<V: ShaVariant, const BLOCK: usize, const DIGEST: usize> {
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 impl<V: ShaVariant, const B: usize, const D: usize> Default for ShaHasher<V, B, D> {
@@ -62,6 +65,7 @@ impl<V: ShaVariant, const B: usize, const D: usize> Default for ShaHasher<V, B, 
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 impl<V: ShaVariant, const B: usize, const D: usize> ShaHasher<V, B, D> {

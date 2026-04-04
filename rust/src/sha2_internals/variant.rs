@@ -15,7 +15,12 @@
 
 #[cfg(any(feature = "sha224", feature = "sha256"))]
 use super::family::Sha2_32;
-#[cfg(any(feature = "sha384", feature = "sha512", feature = "sha512_256"))]
+#[cfg(any(
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_224",
+    feature = "sha512_256"
+))]
 use super::family::Sha2_64;
 #[cfg(any(
     test,
@@ -23,6 +28,7 @@ use super::family::Sha2_64;
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 use super::family::ShaFamily;
@@ -34,6 +40,7 @@ use super::family::ShaFamily;
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub trait ShaVariant: 'static {
@@ -106,6 +113,24 @@ impl ShaVariant for Sha384Cfg {
         0x47b5481dbefa4fa4,
     ];
     const DIGEST_BYTES: usize = 48;
+}
+
+#[cfg(feature = "sha512_224")]
+pub struct Sha512_224Cfg;
+#[cfg(feature = "sha512_224")]
+impl ShaVariant for Sha512_224Cfg {
+    type Family = Sha2_64;
+    const IV: [u64; 8] = [
+        0x8c3d37c819544da2,
+        0x73e1996689dcd4d6,
+        0x1dfab7ae32ff9c82,
+        0x679dd514582f9fcf,
+        0x0f6d2b697bd44da8,
+        0x77e36f7304c48942,
+        0x3f9d85a86a1d36c8,
+        0x1112e6ad91d692a1,
+    ];
+    const DIGEST_BYTES: usize = 28;
 }
 
 #[cfg(feature = "sha512_256")]

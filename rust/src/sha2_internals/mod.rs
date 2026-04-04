@@ -27,6 +27,7 @@ mod word;
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -36,6 +37,7 @@ pub use self::state::ShaState;
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub use self::{hasher::ShaHasher, variant::ShaVariant};
@@ -46,6 +48,8 @@ pub use self::variant::Sha224Cfg;
 pub use self::variant::Sha256Cfg;
 #[cfg(feature = "sha384")]
 pub use self::variant::Sha384Cfg;
+#[cfg(feature = "sha512_224")]
+pub use self::variant::Sha512_224Cfg;
 #[cfg(feature = "sha512_256")]
 pub use self::variant::Sha512_256Cfg;
 #[cfg(feature = "sha512")]
@@ -61,6 +65,8 @@ pub type Sha256 = ShaHasher<Sha256Cfg, 64, 32>;
 pub type Sha384 = ShaHasher<Sha384Cfg, 128, 48>;
 #[cfg(feature = "sha512")]
 pub type Sha512 = ShaHasher<Sha512Cfg, 128, 64>;
+#[cfg(feature = "sha512_256")]
+pub type Sha512_224 = ShaHasher<Sha512_224Cfg, 128, 28>;
 #[cfg(feature = "sha512_256")]
 pub type Sha512_256 = ShaHasher<Sha512_256Cfg, 128, 32>;
 
@@ -88,6 +94,11 @@ pub type Sha384State = ShaState<Sha384Cfg, 128, 209>;
     feature = "sha512",
 ))]
 pub type Sha512State = ShaState<Sha512Cfg, 128, 209>;
+#[cfg(all(
+    any(feature = "deserialize", feature = "serialize",),
+    feature = "sha512_224",
+))]
+pub type Sha512_224State = ShaState<Sha512_224Cfg, 128, 209>;
 #[cfg(all(
     any(feature = "deserialize", feature = "serialize",),
     feature = "sha512_256",

@@ -44,12 +44,14 @@ typedef struct Sha224 Sha224;
 typedef struct Sha256 Sha256;
 typedef struct Sha384 Sha384;
 typedef struct Sha512 Sha512;
+typedef struct Sha512_224 Sha512_224;
 typedef struct Sha512_256 Sha512_256;
 
 typedef struct Sha224State Sha224State;
 typedef struct Sha256State Sha256State;
 typedef struct Sha384State Sha384State;
 typedef struct Sha512State Sha512State;
+typedef struct Sha512_256State Sha512_224State;
 typedef struct Sha512_256State Sha512_256State;
 
 /**
@@ -247,6 +249,55 @@ uintptr_t sha512_serialize(const Sha512 *s, uint8_t *result_ptr);
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
 uintptr_t sha512_deserialize(const Sha512State *state, Sha512 *s);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+uintptr_t sha512_224_init(Sha512_224 *s);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+void sha512_224_reset(Sha512_224 *s);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+void sha512_224_update(Sha512_224 *s, const uint8_t *data, uintptr_t len);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+uintptr_t sha512_224_finalize(Sha512_224 *s, uint8_t *result_ptr);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+uintptr_t sha512_224_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+uintptr_t sha512_224_serialize(const Sha512_224 *s, uint8_t *result_ptr);
+
+/**
+ * # Safety
+ *
+ * C bindings. Caller is responsible for ensuring memory correctness.
+ */
+uintptr_t sha512_224_deserialize(const Sha512_224State *state, Sha512_224 *s);
 
 /**
  * # Safety

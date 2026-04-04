@@ -26,6 +26,7 @@ interface ImportMeta {
 		readonly sha256: boolean;
 		readonly sha384: boolean;
 		readonly sha512: boolean;
+		readonly sha512_224: boolean;
 		readonly sha512_256: boolean;
 		readonly serialize: boolean;
 		readonly deserialize: boolean;

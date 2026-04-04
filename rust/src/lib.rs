@@ -65,6 +65,14 @@ pub use crate::sha2_internals::Sha512State;
 pub use crate::sha2_internals::{Sha512, Sha512Cfg};
 
 #[cfg(all(
+    feature = "sha512_224",
+    any(feature = "serialize", feature = "deserialize")
+))]
+pub use crate::sha2_internals::Sha512_224State;
+#[cfg(feature = "sha512")]
+pub use crate::sha2_internals::{Sha512_224, Sha512_224Cfg};
+
+#[cfg(all(
     feature = "sha512_256",
     any(feature = "serialize", feature = "deserialize")
 ))]

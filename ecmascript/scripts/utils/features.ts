@@ -87,8 +87,12 @@ const allAlgorithms: Feature[] = [
 	'sha256',
 	'sha384',
 	'sha512',
+	'sha512_224',
 	'sha512_256',
 ];
+
+/** Algorithms that are not built by default. */
+const algosDisabledByDefault: Feature[] = ['sha512_224'];
 
 /**
  * Enumerate every feature combination that should be built.
@@ -111,7 +115,9 @@ export function generateFeatureCombinations(): IFeatureSet[] {
 	// An algorithm participates in the matrix (present/absent) when it
 	// appears in `FEATURES`, or when no override is given.
 	const algoDimensions: Feature[][][] = allAlgorithms.map((algo) => {
-		const enabled = envFeatures === null || envFeatures.has(algo);
+		const enabled =
+			(envFeatures === null && !algosDisabledByDefault.includes(algo)) ||
+			envFeatures?.has(algo);
 		return enabled ? [[algo], []] : [[]];
 	});
 

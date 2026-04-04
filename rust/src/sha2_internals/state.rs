@@ -20,6 +20,7 @@
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -45,6 +46,7 @@ use {
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -62,6 +64,7 @@ pub struct ShaState<V: ShaVariant, const BLOCK: usize, const SERIAL: usize> {
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -118,6 +121,7 @@ impl<V: ShaVariant, const B: usize, const S: usize> ShaState<V, B, S> {
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -147,6 +151,7 @@ impl<V: ShaVariant, const B: usize, const D: usize, const S: usize> From<&ShaHas
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -167,6 +172,7 @@ impl<V: ShaVariant, const B: usize, const D: usize, const S: usize> From<ShaHash
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]
@@ -194,6 +200,7 @@ impl<V: ShaVariant, const B: usize, const D: usize, const S: usize> TryFrom<&Sha
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     )
 ))]

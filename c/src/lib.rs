@@ -23,6 +23,8 @@ mod sha256;
 mod sha384;
 #[cfg(feature = "sha512")]
 mod sha512;
+#[cfg(feature = "sha512_224")]
+mod sha512_224;
 #[cfg(feature = "sha512_256")]
 mod sha512_256;
 
@@ -36,6 +38,8 @@ mod exports {
     pub use super::sha384::*;
     #[cfg(feature = "sha512")]
     pub use super::sha512::*;
+    #[cfg(feature = "sha512_224")]
+    pub use super::sha512_224::*;
     #[cfg(feature = "sha512_256")]
     pub use super::sha512_256::*;
 }
@@ -46,6 +50,7 @@ mod exports {
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     ),
     any(feature = "streaming", feature = "sync")

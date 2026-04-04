@@ -53,6 +53,7 @@ export type Feature =
 	| 'sha2-compress-unrolled'
 	| 'sha384'
 	| 'sha512'
+	| 'sha512_224'
 	| 'sha512_256'
 	| 'deserialize'
 	| 'serialize'

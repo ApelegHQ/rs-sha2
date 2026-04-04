@@ -18,6 +18,7 @@
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 use super::word::ShaWord;
@@ -34,6 +35,7 @@ use super::word::ShaWord;
     feature = "sha256",
     feature = "sha384",
     feature = "sha512",
+    feature = "sha512_224",
     feature = "sha512_256"
 ))]
 pub trait ShaFamily: 'static {
@@ -300,10 +302,20 @@ impl ShaFamily for Sha2_32 {
 //  64-bit family (SHA-384, SHA-512, SHA-512/256)
 // ============================================================================
 
-#[cfg(any(feature = "sha384", feature = "sha512", feature = "sha512_256"))]
+#[cfg(any(
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_224",
+    feature = "sha512_256"
+))]
 pub struct Sha2_64;
 
-#[cfg(any(feature = "sha384", feature = "sha512", feature = "sha512_256"))]
+#[cfg(any(
+    feature = "sha384",
+    feature = "sha512",
+    feature = "sha512_224",
+    feature = "sha512_256"
+))]
 impl ShaFamily for Sha2_64 {
     type Word = u64;
     const BLOCK_BYTES: usize = 128;

@@ -29,6 +29,7 @@ keywords = [
   "sha256",
   "sha384",
   "sha512",
+  "sha512/224",
   "sha512/256",
   "streaming",
   "wasm"

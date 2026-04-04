@@ -27,5 +27,8 @@ DEFINE_SHA_TEST_GROUP(sha384, Sha384, 48, "SHA384LongMsg.rsp", sha384_long_msg);
 DEFINE_SHA_TEST_GROUP(sha512, Sha512, 64, "SHA512ShortMsg.rsp", sha512_short_msg);
 DEFINE_SHA_TEST_GROUP(sha512, Sha512, 64, "SHA512LongMsg.rsp", sha512_long_msg);
 
+DEFINE_SHA_TEST_GROUP(sha512_224, Sha512_224, 28, "SHA512_224ShortMsg.rsp", sha512_224_short_msg);
+DEFINE_SHA_TEST_GROUP(sha512_224, Sha512_224, 28, "SHA512_224LongMsg.rsp", sha512_224_long_msg);
+
 DEFINE_SHA_TEST_GROUP(sha512_256, Sha512_256, 32, "SHA512_256ShortMsg.rsp", sha512_256_short_msg);
 DEFINE_SHA_TEST_GROUP(sha512_256, Sha512_256, 32, "SHA512_256LongMsg.rsp", sha512_256_long_msg);

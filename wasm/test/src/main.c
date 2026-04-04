@@ -29,6 +29,9 @@ int run_sha384_long_msg_tests(void);
 int run_sha512_short_msg_tests(void);
 int run_sha512_long_msg_tests(void);
 
+int run_sha512_224_short_msg_tests(void);
+int run_sha512_224_long_msg_tests(void);
+
 int run_sha512_256_short_msg_tests(void);
 int run_sha512_256_long_msg_tests(void);
 
@@ -43,12 +46,14 @@ int main(int argc, char **argv)
     failures |= run_sha256_short_msg_tests();
     failures |= run_sha384_short_msg_tests();
     failures |= run_sha512_short_msg_tests();
+    failures |= run_sha512_224_short_msg_tests();
     failures |= run_sha512_256_short_msg_tests();
 
     failures |= run_sha224_long_msg_tests();
     failures |= run_sha256_long_msg_tests();
     failures |= run_sha384_long_msg_tests();
     failures |= run_sha512_long_msg_tests();
+    failures |= run_sha512_224_long_msg_tests();
     failures |= run_sha512_256_long_msg_tests();
 
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;

@@ -18,10 +18,7 @@
 #[cfg(all(feature = "std", not(test)))]
 extern crate std;
 
-#[cfg(all(
-    not(feature = "std"),
-    not(test),
-))]
+#[cfg(all(not(feature = "std"), not(test),))]
 #[panic_handler]
 fn panic(_info: &::core::panic::PanicInfo) -> ! {
     loop {}
@@ -39,6 +36,7 @@ static ALLOC: ::wee_alloc::WeeAlloc = ::wee_alloc::WeeAlloc::INIT;
         feature = "sha256",
         feature = "sha384",
         feature = "sha512",
+        feature = "sha512_224",
         feature = "sha512_256"
     ),
     any(feature = "sync", feature = "streaming")
