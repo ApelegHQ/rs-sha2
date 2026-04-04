@@ -1,2 +1,5 @@
-#cmakedefine HAVE_UNISTD_H "@HAVE_UNISTD_H@"
 #cmakedefine HAVE_GETLINE "@HAVE_GETLINE@"
+#cmakedefine HAVE_FOPEN_S "@HAVE_FOPEN_S@"
+#cmakedefine HAVE_ERRNO_T "@HAVE_errno_t@"
+#cmakedefine HAVE_UNISTD_H "@HAVE_UNISTD_H@"
+

@@ -56,10 +56,21 @@ foreach(f IN LISTS _warning_flags)
 endforeach()
 # </flags>
 
+include(CheckTypeSize)
+include(CMakePushCheckState)
+
+cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_DEFINITIONS "-D__STDC_WANT_LIB_EXT1__=1")
+  set(CMAKE_REQUIRED_INCLUDES "errno.h")
+  include(CheckTypeSize)
+  check_type_size("errno_t" SIZEOF_ERRNO_T)
+cmake_pop_check_state()
+
 include(CheckIncludeFile)
 check_include_file(unistd.h HAVE_UNISTD_H)
 
 include(CheckFunctionExists)
+check_function_exists(fopen_s HAVE_FOPEN_S CMAKE_REQUIRED_DEFINITIONS "-D__STDC_WANT_LIB_EXT1__=1" CMAKE_REQUIRED_INCLUDES "stdio.h")
 check_function_exists(getline HAVE_GETLINE CMAKE_REQUIRED_DEFINITIONS "-D_POSIX_C_SOURCE=200809L" CMAKE_REQUIRED_INCLUDES "stdio.h")
 
 configure_file(CMake/configure.h.in generated/configure.h)

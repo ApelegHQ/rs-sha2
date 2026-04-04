@@ -22,6 +22,8 @@
 #ifdef HAVE_GETLINE
 #define _POSIX_C_SOURCE 200809L
 #endif  /* HAVE_GETLINE */
+#define __STDC_WANT_LIB_EXT1__ 1
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -74,6 +76,26 @@ static ssize_t compat_getline(char **lineptr, size_t *n, FILE *stream)
 
 #define getline compat_getline
 #endif  /* HAVE_GETLINE */
+
+#ifndef HAVE_ERRNO_T
+typedef int errno_t;
+#endif /* HAVE_ERRNO_T */
+
+#ifndef HAVE_FOPEN_S
+errno_t fopen_s(FILE** pFile, const char *pathname, const char *mode)
+{
+    FILE *file;
+
+    if (pFile == NULL || pathname == NULL || mode == NULL) return EINVAL;
+
+    file = fopen(pathname, mode);
+    *pFile = file;
+
+    if (file == NULL) return errno ? errno : ENOENT;
+
+    return 0;
+}
+#endif /* HAVE_FOPEN_S */
 
 static char *dup_string(const char *src)
 {
@@ -154,6 +176,7 @@ void free_vector_file(vector_file_t *vf)
 
 vector_file_t* parse_vector_file(const char *file_path)
 {
+    errno_t err;
     FILE *file;
     size_t capacity;
     vector_file_t *vf;
@@ -166,8 +189,8 @@ vector_file_t* parse_vector_file(const char *file_path)
     char *cur_msg_str = NULL;
     char *cur_md_str = NULL;
 
-    file = fopen(file_path, "r");
-    if (!file) {
+    err = fopen_s(&file, file_path, "r");
+    if (err) {
         perror("Failed to open vector file");
         return NULL;
     }

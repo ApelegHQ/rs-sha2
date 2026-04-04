@@ -35,6 +35,13 @@ int run_sha512_224_long_msg_tests(void);
 int run_sha512_256_short_msg_tests(void);
 int run_sha512_256_long_msg_tests(void);
 
+int run_sha224_serialize_tests(void);
+int run_sha256_serialize_tests(void);
+int run_sha384_serialize_tests(void);
+int run_sha512_serialize_tests(void);
+int run_sha512_224_serialize_tests(void);
+int run_sha512_256_serialize_tests(void);
+
 int main(int argc, char **argv)
 {
     int failures = 0;
@@ -55,6 +62,13 @@ int main(int argc, char **argv)
     failures |= run_sha512_long_msg_tests();
     failures |= run_sha512_224_long_msg_tests();
     failures |= run_sha512_256_long_msg_tests();
+
+    failures |= run_sha224_serialize_tests();
+    failures |= run_sha256_serialize_tests();
+    failures |= run_sha384_serialize_tests();
+    failures |= run_sha512_serialize_tests();
+    failures |= run_sha512_224_serialize_tests();
+    failures |= run_sha512_256_serialize_tests();
 
     return failures ? EXIT_FAILURE : EXIT_SUCCESS;
 }

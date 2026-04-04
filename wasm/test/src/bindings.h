@@ -94,7 +94,7 @@ uintptr_t sha224_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_serialize(const Sha224 *s, uint8_t *result_ptr);
+uintptr_t sha224_serialize(const Sha224 *s, Sha224State *result_ptr);
 
 /**
  * # Safety
@@ -143,7 +143,7 @@ uintptr_t sha256_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_serialize(const Sha256 *s, uint8_t *result_ptr);
+uintptr_t sha256_serialize(const Sha256 *s, Sha256State *result_ptr);
 
 /**
  * # Safety
@@ -192,7 +192,7 @@ uintptr_t sha384_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_serialize(const Sha384 *s, uint8_t *result_ptr);
+uintptr_t sha384_serialize(const Sha384 *s, Sha384State *result_ptr);
 
 /**
  * # Safety
@@ -241,7 +241,7 @@ uintptr_t sha512_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_serialize(const Sha512 *s, uint8_t *result_ptr);
+uintptr_t sha512_serialize(const Sha512 *s, Sha512State *result_ptr);
 
 /**
  * # Safety
@@ -290,7 +290,7 @@ uintptr_t sha512_224_digest(const uint8_t *data, uintptr_t len, uint8_t *result_
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_serialize(const Sha512_224 *s, uint8_t *result_ptr);
+uintptr_t sha512_224_serialize(const Sha512_224 *s, Sha512_224State *result_ptr);
 
 /**
  * # Safety
@@ -339,7 +339,7 @@ uintptr_t sha512_256_digest(const uint8_t *data, uintptr_t len, uint8_t *result_
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_serialize(const Sha512_256 *s, uint8_t *result_ptr);
+uintptr_t sha512_256_serialize(const Sha512_256 *s, Sha512_256State *result_ptr);
 
 /**
  * # Safety

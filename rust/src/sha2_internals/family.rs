@@ -69,6 +69,8 @@ pub trait ShaFamily: 'static {
     fn read_len(src: &[u8]) -> u128;
 
     /// Compress one block (`BLOCK_BYTES` bytes) into the 8-word chaining state.
+    // unused_assignments false positive on `recalc_w` (`$w[idx] = wv;`)
+    #[allow(unused_assignments)]
     #[inline(always)]
     #[cfg(feature = "sha2-compress-unrolled")]
     fn compress(state: &mut [Self::Word; 8], block: &[u8]) {
@@ -97,19 +99,21 @@ pub trait ShaFamily: 'static {
         }
 
         macro_rules! recalc_w {
-            ($w:ident, $n:expr) => {{
+            ($last:expr, $w:ident, $n:expr) => {{
                 let idx = $n;
                 let wv = $w[idx]
                     .wrapping_add(Self::small_sigma1($w[(idx + 14) & 15]))
                     .wrapping_add($w[(idx + 9) & 15])
                     .wrapping_add(Self::small_sigma0($w[(idx + 1) & 15]));
-                $w[idx] = wv;
+                if !$last {
+                    $w[idx] = wv;
+                }
                 wv
             }};
         }
 
         macro_rules! round_17_xx {
-            ($w:ident, $a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $base:expr, $n:expr) => {{
+            ($last:expr, $w:ident, $a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $base:expr, $n:expr) => {{
                 round!(
                     $a,
                     $b,
@@ -120,29 +124,29 @@ pub trait ShaFamily: 'static {
                     $g,
                     $h,
                     Self::K[$base + $n],
-                    recalc_w!($w, $n)
+                    recalc_w!($last, $w, $n)
                 );
             }};
         }
 
         macro_rules! expansion_16 {
-            ($w:ident, $a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $base:expr) => {{
-                round_17_xx!($w, $a, $b, $c, $d, $e, $f, $g, $h, $base, 0);
-                round_17_xx!($w, $h, $a, $b, $c, $d, $e, $f, $g, $base, 1);
-                round_17_xx!($w, $g, $h, $a, $b, $c, $d, $e, $f, $base, 2);
-                round_17_xx!($w, $f, $g, $h, $a, $b, $c, $d, $e, $base, 3);
-                round_17_xx!($w, $e, $f, $g, $h, $a, $b, $c, $d, $base, 4);
-                round_17_xx!($w, $d, $e, $f, $g, $h, $a, $b, $c, $base, 5);
-                round_17_xx!($w, $c, $d, $e, $f, $g, $h, $a, $b, $base, 6);
-                round_17_xx!($w, $b, $c, $d, $e, $f, $g, $h, $a, $base, 7);
-                round_17_xx!($w, $a, $b, $c, $d, $e, $f, $g, $h, $base, 8);
-                round_17_xx!($w, $h, $a, $b, $c, $d, $e, $f, $g, $base, 9);
-                round_17_xx!($w, $g, $h, $a, $b, $c, $d, $e, $f, $base, 10);
-                round_17_xx!($w, $f, $g, $h, $a, $b, $c, $d, $e, $base, 11);
-                round_17_xx!($w, $e, $f, $g, $h, $a, $b, $c, $d, $base, 12);
-                round_17_xx!($w, $d, $e, $f, $g, $h, $a, $b, $c, $base, 13);
-                round_17_xx!($w, $c, $d, $e, $f, $g, $h, $a, $b, $base, 14);
-                round_17_xx!($w, $b, $c, $d, $e, $f, $g, $h, $a, $base, 15);
+            ($w:ident, $a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $base:expr, $last:expr) => {{
+                round_17_xx!(false, $w, $a, $b, $c, $d, $e, $f, $g, $h, $base, 0);
+                round_17_xx!(false, $w, $h, $a, $b, $c, $d, $e, $f, $g, $base, 1);
+                round_17_xx!(false, $w, $g, $h, $a, $b, $c, $d, $e, $f, $base, 2);
+                round_17_xx!(false, $w, $f, $g, $h, $a, $b, $c, $d, $e, $base, 3);
+                round_17_xx!(false, $w, $e, $f, $g, $h, $a, $b, $c, $d, $base, 4);
+                round_17_xx!(false, $w, $d, $e, $f, $g, $h, $a, $b, $c, $base, 5);
+                round_17_xx!(false, $w, $c, $d, $e, $f, $g, $h, $a, $b, $base, 6);
+                round_17_xx!(false, $w, $b, $c, $d, $e, $f, $g, $h, $a, $base, 7);
+                round_17_xx!(false, $w, $a, $b, $c, $d, $e, $f, $g, $h, $base, 8);
+                round_17_xx!(false, $w, $h, $a, $b, $c, $d, $e, $f, $g, $base, 9);
+                round_17_xx!(false, $w, $g, $h, $a, $b, $c, $d, $e, $f, $base, 10);
+                round_17_xx!(false, $w, $f, $g, $h, $a, $b, $c, $d, $e, $base, 11);
+                round_17_xx!(false, $w, $e, $f, $g, $h, $a, $b, $c, $d, $base, 12);
+                round_17_xx!(false, $w, $d, $e, $f, $g, $h, $a, $b, $c, $base, 13);
+                round_17_xx!($last, $w, $c, $d, $e, $f, $g, $h, $a, $b, $base, 14);
+                round_17_xx!($last, $w, $b, $c, $d, $e, $f, $g, $h, $a, $base, 15);
             }};
         }
 
@@ -166,12 +170,12 @@ pub trait ShaFamily: 'static {
         round_1_16!(w, c, d, e, f, g, h, a, b, 14);
         round_1_16!(w, b, c, d, e, f, g, h, a, 15);
 
-        expansion_16!(w, a, b, c, d, e, f, g, h, 16);
-        expansion_16!(w, a, b, c, d, e, f, g, h, 32);
-        expansion_16!(w, a, b, c, d, e, f, g, h, 48);
+        expansion_16!(w, a, b, c, d, e, f, g, h, 16, false);
+        expansion_16!(w, a, b, c, d, e, f, g, h, 32, false);
+        expansion_16!(w, a, b, c, d, e, f, g, h, 48, Self::ROUNDS <= 64);
 
         if Self::ROUNDS > 64 {
-            expansion_16!(w, a, b, c, d, e, f, g, h, 64);
+            expansion_16!(w, a, b, c, d, e, f, g, h, 64, true);
         }
 
         state[0] = state[0].wrapping_add(a);

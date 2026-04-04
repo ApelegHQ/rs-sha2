@@ -20,6 +20,7 @@ add_executable(sha2_cavs_tests
     main.c
     helpers/rsp_parser.c
     test_sha_family.c
+    test_sha_serialize.c
 )
 
 # Link the test executable against our library and cmocka

@@ -58,6 +58,9 @@ export function bundleWrapperFactory(
 				'import.meta.features.sha512': String(
 					hasFeature(featureSet, 'sha512'),
 				),
+				'import.meta.features.sha512_224': String(
+					hasFeature(featureSet, 'sha512_224'),
+				),
 				'import.meta.features.sha512_256': String(
 					hasFeature(featureSet, 'sha512_256'),
 				),
