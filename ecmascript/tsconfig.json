@@ -20,7 +20,7 @@
 	"ts-node": {
 		"experimentalResolver": true
 	},
-	"include": ["src/**/*", "scripts/**/*"],
+	"include": ["src/**/*", "resources/**/*", "scripts/**/*"],
 	"exclude": [
 		"node_modules",
 		"build"

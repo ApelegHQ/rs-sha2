@@ -101,7 +101,7 @@ uintptr_t sha224_serialize(const Sha224 *s, Sha224State *result_ptr);
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_deserialize(const Sha224State *state, Sha224 *s);
+uintptr_t sha224_deserialize(const Sha224State *state, uintptr_t state_size, Sha224 *s);
 
 /**
  * # Safety
@@ -150,7 +150,7 @@ uintptr_t sha256_serialize(const Sha256 *s, Sha256State *result_ptr);
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_deserialize(const Sha256State *state, Sha256 *s);
+uintptr_t sha256_deserialize(const Sha256State *state, uintptr_t state_size, Sha256 *s);
 
 /**
  * # Safety
@@ -199,7 +199,7 @@ uintptr_t sha384_serialize(const Sha384 *s, Sha384State *result_ptr);
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_deserialize(const Sha384State *state, Sha384 *s);
+uintptr_t sha384_deserialize(const Sha384State *state, uintptr_t state_size, Sha384 *s);
 
 /**
  * # Safety
@@ -248,7 +248,7 @@ uintptr_t sha512_serialize(const Sha512 *s, Sha512State *result_ptr);
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_deserialize(const Sha512State *state, Sha512 *s);
+uintptr_t sha512_deserialize(const Sha512State *state, uintptr_t state_size, Sha512 *s);
 
 /**
  * # Safety
@@ -297,7 +297,7 @@ uintptr_t sha512_224_serialize(const Sha512_224 *s, Sha512_224State *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_deserialize(const Sha512_224State *state, Sha512_224 *s);
+uintptr_t sha512_224_deserialize(const Sha512_224State *state, uintptr_t state_size, Sha512_224 *s);
 
 /**
  * # Safety
@@ -346,7 +346,7 @@ uintptr_t sha512_256_serialize(const Sha512_256 *s, Sha512_256State *result_ptr)
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_deserialize(const Sha512_256State *state, Sha512_256 *s);
+uintptr_t sha512_256_deserialize(const Sha512_256State *state, uintptr_t state_size, Sha512_256 *s);
 
 #ifdef __cplusplus
 }  /* extern "C" */

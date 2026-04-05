@@ -119,9 +119,14 @@ pub unsafe extern "C" fn sha512_256_serialize(s: *const Sha512_256, result_ptr: 
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn sha512_256_deserialize(
     state: *const Sha512_256State,
+    state_size: usize,
     s: *mut Sha512_256,
 ) -> usize {
     if !s.is_null() {
+        if state_size != Sha512_256State::RAW_SIZE {
+            return 0;
+        }
+
         let state = unsafe { &*state };
         let s = unsafe { &mut *s };
         let result = <Sha512_256>::try_from(state);

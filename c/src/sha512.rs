@@ -113,8 +113,16 @@ pub unsafe extern "C" fn sha512_serialize(s: *const Sha512, result_ptr: *mut u8)
 /// C bindings. Caller is responsible for ensuring memory correctness.
 #[cfg(all(feature = "streaming", feature = "deserialize"))]
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn sha512_deserialize(state: *const Sha512State, s: *mut Sha512) -> usize {
+pub unsafe extern "C" fn sha512_deserialize(
+    state: *const Sha512State,
+    state_size: usize,
+    s: *mut Sha512,
+) -> usize {
     if !s.is_null() {
+        if state_size != Sha512State::RAW_SIZE {
+            return 0;
+        }
+
         let state = unsafe { &*state };
         let s = unsafe { &mut *s };
         let result = <Sha512>::try_from(state);
