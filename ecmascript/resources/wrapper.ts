@@ -327,7 +327,11 @@ function initFactory$(
 				heap.set(serializedDataU8, statePtr);
 				try {
 					/** Byte-size of the restored state (0 = failure). */
-					var size = deserialize(statePtr, alignedHeapBase);
+					var size = deserialize(
+						statePtr,
+						serializedDataU8.byteLength,
+						alignedHeapBase,
+					);
 
 					if (!size) {
 						throw new Error('Unable to deserialize');

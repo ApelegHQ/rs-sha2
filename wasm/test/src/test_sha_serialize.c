@@ -35,7 +35,7 @@
         assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
         ALG_LOWER##_update(sha_state, msg, split); \
         assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, restored_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
         ALG_LOWER##_update(restored_state, msg + split, (sizeof(msg) - 1) - split); \
         assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md), DIGEST_LEN_BYTES); \
         assert_memory_equal(result_md, expected_md, DIGEST_LEN_BYTES); \
@@ -63,7 +63,7 @@
         assert_int_equal(ALG_LOWER##_finalize(expected_state, expected_md), DIGEST_LEN_BYTES); \
         assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
         assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, restored_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
         assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md), DIGEST_LEN_BYTES); \
         assert_memory_equal(result_md, expected_md, DIGEST_LEN_BYTES); \
         free(serialized_state); \
@@ -93,7 +93,7 @@
         assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
         ALG_LOWER##_update(sha_state, prefix, sizeof(prefix) - 1); \
         assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, restored_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
         ALG_LOWER##_update(sha_state, original_suffix, sizeof(original_suffix) - 1); \
         ALG_LOWER##_update(restored_state, restored_suffix, sizeof(restored_suffix) - 1); \
         assert_int_equal(ALG_LOWER##_finalize(sha_state, original_md), DIGEST_LEN_BYTES); \
