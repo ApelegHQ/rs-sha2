@@ -74,7 +74,7 @@ pub trait ShaFamily: 'static {
     #[inline(always)]
     #[cfg(feature = "sha2-compress-unrolled")]
     fn compress(state: &mut [Self::Word; 8], block: &[u8]) {
-        assert!(block.len() >= Self::BLOCK_BYTES);
+        debug_assert!(block.len() >= Self::BLOCK_BYTES);
 
         macro_rules! round {
             ($a:ident, $b:ident, $c:ident, $d:ident, $e:ident, $f:ident, $g:ident, $h:ident, $k:expr, $data:expr) => {{
@@ -191,7 +191,7 @@ pub trait ShaFamily: 'static {
     #[inline(always)]
     #[cfg(not(feature = "sha2-compress-unrolled"))]
     fn compress(state: &mut [Self::Word; 8], block: &[u8]) {
-        assert!(block.len() >= Self::BLOCK_BYTES);
+        debug_assert!(block.len() >= Self::BLOCK_BYTES);
 
         let mut w = [Self::Word::ZERO; 16];
         let mut i = 0;
