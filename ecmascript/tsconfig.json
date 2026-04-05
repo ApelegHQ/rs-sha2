@@ -21,8 +21,5 @@
 		"experimentalResolver": true
 	},
 	"include": ["src/**/*", "resources/**/*", "scripts/**/*"],
-	"exclude": [
-		"node_modules",
-		"build"
-	]
+	"exclude": ["node_modules", "build"]
 }

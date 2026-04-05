@@ -37,6 +37,8 @@ export default [
 			'**/dist/*',
 			'**/build/*',
 			'**/coverage/*',
+			'**/.nyc_output/*',
+			'**/.test-harness/*',
 			'**/package-lock.json',
 		],
 	},
@@ -82,6 +84,18 @@ export default [
 					format: ['camelCase'],
 				},
 			],
+		},
+	},
+	{
+		files: ['**/*.json', '**/*.externs.*'],
+		rules: {
+			'@typescript-eslint/no-unused-expressions': 'off',
+		},
+	},
+	{
+		files: ['**/*.cjs'],
+		rules: {
+			'@typescript-eslint/no-require-imports': 'off',
 		},
 	},
 ];

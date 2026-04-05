@@ -1,0 +1,15 @@
+{
+	"name": "fuzzing",
+	"version": "0.0.0",
+	"private": true,
+	"type": "commonjs",
+	"scripts": {
+		"start": "jsfuzz --timeout 300 src/index.cjs corpus",
+		"report": "nyc report --per-file --exclude-after-remap=false",
+		"report:html": "nyc report --reporter=html --per-file --exclude-after-remap=false"
+	},
+	"devDependencies": {
+		"@apeleghq/sha2": "^0.1.5",
+		"jsfuzz": "^1.0.15"
+	}
+}

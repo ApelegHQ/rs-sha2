@@ -15,8 +15,6 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* eslint-disable @typescript-eslint/no-unused-expressions */
-
 /**
  * @externs
  */
