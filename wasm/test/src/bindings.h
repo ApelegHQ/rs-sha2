@@ -18,10 +18,7 @@
 
 #pragma once
 
-#include <stdarg.h>
-#include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -59,294 +56,294 @@ typedef struct Sha512_256State Sha512_256State;
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_init(Sha224 *s);
+uintptr_t sha224_init(Sha224 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha224_reset(Sha224 *s);
+void sha224_reset(Sha224 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha224_update(Sha224 *s, const uint8_t *data, uintptr_t len);
+void sha224_update(Sha224 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_finalize(Sha224 *s, uint8_t *result_ptr);
+uintptr_t sha224_finalize(Sha224 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha224_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_serialize(const Sha224 *s, Sha224State *result_ptr);
+uintptr_t sha224_serialize(Sha224State *result_ptr, uintptr_t result_size, const Sha224 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha224_deserialize(const Sha224State *state, uintptr_t state_size, Sha224 *s);
+uintptr_t sha224_deserialize(Sha224 *ctx, uintptr_t ctx_size, const Sha224State *state, uintptr_t state_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_init(Sha256 *s);
+uintptr_t sha256_init(Sha256 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha256_reset(Sha256 *s);
+void sha256_reset(Sha256 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha256_update(Sha256 *s, const uint8_t *data, uintptr_t len);
+void sha256_update(Sha256 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_finalize(Sha256 *s, uint8_t *result_ptr);
+uintptr_t sha256_finalize(Sha256 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha256_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_serialize(const Sha256 *s, Sha256State *result_ptr);
+uintptr_t sha256_serialize(Sha256State *result_ptr, uintptr_t result_size, const Sha256 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha256_deserialize(const Sha256State *state, uintptr_t state_size, Sha256 *s);
+uintptr_t sha256_deserialize(Sha256 *ctx, uintptr_t ctx_size, const Sha256State *state, uintptr_t state_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_init(Sha384 *s);
+uintptr_t sha384_init(Sha384 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha384_reset(Sha384 *s);
+void sha384_reset(Sha384 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha384_update(Sha384 *s, const uint8_t *data, uintptr_t len);
+void sha384_update(Sha384 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_finalize(Sha384 *s, uint8_t *result_ptr);
+uintptr_t sha384_finalize(Sha384 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha384_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_serialize(const Sha384 *s, Sha384State *result_ptr);
+uintptr_t sha384_serialize(Sha384State *result_ptr, uintptr_t result_size, const Sha384 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha384_deserialize(const Sha384State *state, uintptr_t state_size, Sha384 *s);
+uintptr_t sha384_deserialize(Sha384 *ctx, uintptr_t ctx_size, const Sha384State *state, uintptr_t state_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_init(Sha512 *s);
+uintptr_t sha512_init(Sha512 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_reset(Sha512 *s);
+void sha512_reset(Sha512 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_update(Sha512 *s, const uint8_t *data, uintptr_t len);
+void sha512_update(Sha512 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_finalize(Sha512 *s, uint8_t *result_ptr);
+uintptr_t sha512_finalize(Sha512 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha512_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_serialize(const Sha512 *s, Sha512State *result_ptr);
+uintptr_t sha512_serialize(Sha512State *result_ptr, uintptr_t result_size, const Sha512 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_deserialize(const Sha512State *state, uintptr_t state_size, Sha512 *s);
+uintptr_t sha512_deserialize(Sha512 *ctx, uintptr_t ctx_size, const Sha512State *state, uintptr_t state_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_init(Sha512_224 *s);
+uintptr_t sha512_224_init(Sha512_224 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_224_reset(Sha512_224 *s);
+void sha512_224_reset(Sha512_224 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_224_update(Sha512_224 *s, const uint8_t *data, uintptr_t len);
+void sha512_224_update(Sha512_224 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_finalize(Sha512_224 *s, uint8_t *result_ptr);
+uintptr_t sha512_224_finalize(Sha512_224 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha512_224_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_serialize(const Sha512_224 *s, Sha512_224State *result_ptr);
+uintptr_t sha512_224_serialize(Sha512_224State *result_ptr, uintptr_t result_size, const Sha512_224 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_224_deserialize(const Sha512_224State *state, uintptr_t state_size, Sha512_224 *s);
+uintptr_t sha512_224_deserialize(Sha512_224 *ctx, uintptr_t ctx_size, const Sha512_224State *state, uintptr_t state_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_init(Sha512_256 *s);
+uintptr_t sha512_256_init(Sha512_256 *ctx, uintptr_t ctx_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_256_reset(Sha512_256 *s);
+void sha512_256_reset(Sha512_256 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-void sha512_256_update(Sha512_256 *s, const uint8_t *data, uintptr_t len);
+void sha512_256_update(Sha512_256 *ctx, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_finalize(Sha512_256 *s, uint8_t *result_ptr);
+uintptr_t sha512_256_finalize(Sha512_256 *ctx, uint8_t *result_ptr, uintptr_t result_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_digest(const uint8_t *data, uintptr_t len, uint8_t *result_ptr);
+uintptr_t sha512_256_digest(uint8_t *result_ptr, uintptr_t result_size, const uint8_t *data, uintptr_t data_size);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_serialize(const Sha512_256 *s, Sha512_256State *result_ptr);
+uintptr_t sha512_256_serialize(Sha512_256State *result_ptr, uintptr_t result_size,const Sha512_256 *ctx);
 
 /**
  * # Safety
  *
  * C bindings. Caller is responsible for ensuring memory correctness.
  */
-uintptr_t sha512_256_deserialize(const Sha512_256State *state, uintptr_t state_size, Sha512_256 *s);
+uintptr_t sha512_256_deserialize(Sha512_256 *ctx, uintptr_t ctx_size, const Sha512_256State *state, uintptr_t state_size);
 
 #ifdef __cplusplus
 }  /* extern "C" */

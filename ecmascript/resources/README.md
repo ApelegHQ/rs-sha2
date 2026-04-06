@@ -4,9 +4,9 @@
 
 A WebAssembly build of Rust SHA-2 implementations, exposed to
 JavaScript/TypeScript. The package provides streaming and one-shot hashers for
-SHA-224, SHA-256, SHA-384, SHA-512 and SHA-512/256 (variant availability depends
-on build features). A TypeScript declaration (`.d.ts`) file is included for a
-typed API.
+SHA-224, SHA-256, SHA-384, SHA-512, SHA-512/224 and SHA-512/256 (variant
+availability depends on build features). A TypeScript declaration (`.d.ts`) file
+is included for a typed API.
 
 ---
 

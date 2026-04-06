@@ -93,7 +93,7 @@ typedef struct {
         for (i = 0; i < vf->vector_count; ++i) { \
             test_vector_t *v = &vf->vectors[i]; \
             assert_int_equal(v->msg_len_bytes, v->len_bits / 8); \
-            ALG_LOWER##_digest(v->msg, v->msg_len_bytes, result_md); \
+            ALG_LOWER##_digest(result_md, DIGEST_LEN_BYTES, v->msg, v->msg_len_bytes); \
             assert_memory_equal(result_md, v->md, v->md_len_bytes); \
         } \
     } \
@@ -104,19 +104,19 @@ typedef struct {
         test_state_t *ts = (test_state_t *)*state; \
         vector_file_t *vf = ts->vf; \
         uint8_t result_md[DIGEST_LEN_BYTES]; \
-        uintptr_t state_size = ALG_LOWER##_init(NULL); \
+        uintptr_t state_size = ALG_LOWER##_init(NULL, 0); \
         ALG_UPPER *sha_state = malloc(state_size); \
         size_t i, j; \
         for (i = 0; i < vf->vector_count; ++i) { \
             test_vector_t *v = &vf->vectors[i]; \
-            ALG_LOWER##_init(sha_state); \
+            ALG_LOWER##_init(sha_state, state_size); \
             ALG_LOWER##_update(sha_state, v->msg, v->msg_len_bytes); \
-            ALG_LOWER##_finalize(sha_state, result_md); \
+            ALG_LOWER##_finalize(sha_state, result_md, DIGEST_LEN_BYTES); \
             assert_memory_equal(result_md, v->md, v->md_len_bytes); \
             if (v->len_bits > 0) { \
                 uint8_t empty_md[DIGEST_LEN_BYTES]; \
                 ALG_LOWER##_reset(sha_state); \
-                ALG_LOWER##_finalize(sha_state, empty_md); \
+                ALG_LOWER##_finalize(sha_state, empty_md, DIGEST_LEN_BYTES); \
                 for(j=0; j<vf->vector_count; ++j) { \
                     if (vf->vectors[j].len_bits == 0) { \
                          assert_memory_equal(empty_md, vf->vectors[j].md, vf->vectors[j].md_len_bytes); \

@@ -15,6 +15,186 @@
 
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
 
+macro_rules! impl_sha_init {
+    ($fn_name:ident, $sha_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(feature = "streaming")]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(ctx: *mut $sha_ty, ctx_size: usize) -> usize {
+            let size = ::core::mem::size_of::<$sha_ty>();
+
+            if !ctx.is_null() {
+                if ctx_size < size {
+                    return 0;
+                }
+
+                let ctx = unsafe { &mut *ctx };
+                *ctx = <$sha_ty>::new();
+            }
+
+            size
+        }
+    };
+}
+
+macro_rules! impl_sha_reset {
+    ($fn_name:ident, $sha_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(feature = "streaming")]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(ctx: *mut $sha_ty) {
+            let ctx = unsafe { &mut *ctx };
+            ctx.reset();
+        }
+    };
+}
+
+macro_rules! impl_sha_update {
+    ($fn_name:ident, $sha_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(feature = "streaming")]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(ctx: *mut $sha_ty, data: *const u8, data_size: usize) {
+            if data.is_null() && data_size != 0 {
+                return;
+            }
+
+            let ctx = unsafe { &mut *ctx };
+            let data = unsafe { ::core::slice::from_raw_parts(data, data_size) };
+            ctx.update(data);
+        }
+    };
+}
+
+macro_rules! impl_sha_finalize {
+    ($fn_name:ident, $sha_ty:ty, $cfg_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(feature = "streaming")]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(
+            ctx: *mut $sha_ty,
+            result_ptr: *mut u8,
+            result_size: usize,
+        ) -> usize {
+            let size = <$cfg_ty>::DIGEST_BYTES;
+
+            if !result_ptr.is_null() {
+                if result_size < size {
+                    return 0;
+                }
+
+                let ctx = unsafe { &mut *ctx };
+                let result_buf = unsafe { ::core::slice::from_raw_parts_mut(result_ptr, size) };
+                let result = ctx.finalize();
+                result_buf.copy_from_slice(&result);
+            }
+
+            size
+        }
+    };
+}
+
+macro_rules! impl_sha_digest {
+    ($fn_name:ident, $sha_ty:ty, $cfg_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(feature = "sync")]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(
+            result_ptr: *mut u8,
+            result_size: usize,
+            data: *const u8,
+            data_size: usize,
+        ) -> usize {
+            let size = <$cfg_ty>::DIGEST_BYTES;
+
+            if !result_ptr.is_null() {
+                if result_size < size {
+                    return 0;
+                }
+
+                let data = unsafe { ::core::slice::from_raw_parts(data, data_size) };
+                let result_buf = unsafe { ::core::slice::from_raw_parts_mut(result_ptr, size) };
+                let result = <$sha_ty>::digest(data);
+                result_buf.copy_from_slice(&result);
+            }
+
+            size
+        }
+    };
+}
+
+macro_rules! impl_sha_serialize {
+    ($fn_name:ident, $sha_ty:ty, $state_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(all(feature = "streaming", feature = "serialize"))]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(
+            result_ptr: *mut u8,
+            result_size: usize,
+            ctx: *const $sha_ty,
+        ) -> usize {
+            let size = <$state_ty>::RAW_SIZE;
+
+            if !result_ptr.is_null() {
+                if result_size < size {
+                    return 0;
+                }
+
+                let ctx = unsafe { &*ctx };
+                let result_buf = unsafe { ::core::slice::from_raw_parts_mut(result_ptr, size) };
+                result_buf.copy_from_slice(<$state_ty>::from(ctx).raw());
+            }
+
+            size
+        }
+    };
+}
+
+macro_rules! impl_sha_deserialize {
+    ($fn_name:ident, $sha_ty:ty, $state_ty:ty) => {
+        #[doc = "# Safety"]
+        #[doc = ""]
+        #[doc = "C bindings. Caller is responsible for ensuring memory correctness."]
+        #[cfg(all(feature = "streaming", feature = "deserialize"))]
+        #[unsafe(no_mangle)]
+        pub unsafe extern "C" fn $fn_name(
+            ctx: *mut $sha_ty,
+            ctx_size: usize,
+            state: *const $state_ty,
+            state_size: usize,
+        ) -> usize {
+            let size = ::core::mem::size_of::<$sha_ty>();
+
+            if !ctx.is_null() {
+                if state_size != <$state_ty>::RAW_SIZE || ctx_size < size {
+                    return 0;
+                }
+
+                let state = unsafe { &*state };
+                let ctx = unsafe { &mut *ctx };
+                match <$sha_ty>::try_from(state) {
+                    Ok(result) => *ctx = result,
+                    Err(_) => return 0,
+                }
+            }
+
+            size
+        }
+    };
+}
+
 #[cfg(feature = "sha224")]
 mod sha224;
 #[cfg(feature = "sha256")]

@@ -73,19 +73,12 @@ const fuzz = async (buffer) => {
 		}
 
 		if (
-			e instanceof Error &&
+			e instanceof RangeError &&
 			e.name === 'Error' &&
 			e.message === 'Unable to deserialize'
 		) {
 			return;
 		}
-
-		// TODO: Not OK, but fine for now
-		if (
-			serializedDataLen < 209 &&
-			e?.message === 'memory access out of bounds'
-		)
-			return;
 
 		throw e;
 	}

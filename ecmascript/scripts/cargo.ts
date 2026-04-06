@@ -15,7 +15,13 @@
 
 import { join } from 'node:path';
 import process from 'node:process';
-import { BUILD_DIR, CARGO_CONFIG, WORKSPACE_DIR } from './config.js';
+import {
+	BUILD_DIR,
+	CARGO_CONFIG,
+	INITIAL_MEMORY,
+	MAX_MEMORY,
+	WORKSPACE_DIR,
+} from './config.js';
 import { exec } from './utils/exec.js';
 import type { IFeatureSet } from './utils/features.js';
 
@@ -45,8 +51,8 @@ export async function buildCargo(
 		'-Clink-arg=--no-entry',
 		'-Clink-arg=-static',
 		'-Clink-arg=-v',
-		'-Clink-arg=--initial-memory=1572864',
-		'-Clink-arg=--max-memory=1572864',
+		`-Clink-arg=--initial-memory=${INITIAL_MEMORY}`,
+		MAX_MEMORY ? `-Clink-arg=--max-memory=${MAX_MEMORY}` : '',
 	]
 		.filter(Boolean)
 		.join(' ');

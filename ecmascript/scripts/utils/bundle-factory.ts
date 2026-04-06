@@ -46,6 +46,7 @@ export function bundleWrapperFactory(
 			format: 'esm',
 			outfile,
 			define: {
+				'import.meta.runtimeHeapSizeAssertions': String(false),
 				'import.meta.features.sha224': String(
 					hasFeature(featureSet, 'sha224'),
 				),

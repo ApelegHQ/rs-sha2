@@ -14,9 +14,10 @@
  */
 
 import binaryen from 'binaryen';
+import assert from 'node:assert/strict';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { BUILD_DIR } from './config.js';
+import { BUILD_DIR, INITIAL_MEMORY, MAX_MEMORY } from './config.js';
 import { replaceAllRotl } from './replace-all-rotl.mjs';
 import type { IFeatureSet } from './utils/features.js';
 
@@ -31,6 +32,39 @@ export async function optimizeWasm(
 	const module = binaryen.readBinary(data);
 	binaryen.setOptimizeLevel(3);
 	binaryen.setShrinkLevel(1);
+
+	// START: Memory info assertions
+	// Avoids needing to set `import.meta.runtimeHeapSizeAssertions`
+	const memoryInfo = module.getMemoryInfo();
+	const memorySize = (memoryInfo.initial * 64) << 10;
+	assert.equal(memorySize, INITIAL_MEMORY);
+	if (MAX_MEMORY) {
+		assert.equal((memoryInfo.max! * 64) << 10, MAX_MEMORY);
+	}
+
+	const heapBaseExport = module.getExport('__heap_base');
+	const heapBaseExportInfo = binaryen.getExportInfo(heapBaseExport);
+	assert.equal(heapBaseExportInfo.kind, binaryen.ExternalKinds.Global);
+	assert.equal(heapBaseExportInfo.name, '__heap_base');
+
+	const heapBaseGlobalInfo = binaryen.getGlobalInfo(heapBaseExport);
+	assert.equal(heapBaseGlobalInfo.name, '__heap_base');
+
+	{
+		const mod = await WebAssembly.instantiate(data);
+		assert(
+			mod.instance.exports['__heap_base'] instanceof WebAssembly.Global,
+		);
+		// Ensure there's enough room in the heap. 1 KiB should be enough
+		// to allocate all necessary information (albeit too little for good
+		// performance).
+		const heapBase = mod.instance.exports['__heap_base'].value;
+		assert(typeof heapBase === 'number');
+		assert(Number.isSafeInteger(heapBase));
+		assert(heapBase >= 0);
+		assert(heapBase <= INITIAL_MEMORY - 1024);
+	}
+	// END: Memory info assertions
 
 	if (noRotl) {
 		// rotl is defined as a function, which makes ES execution slower

@@ -46,6 +46,9 @@ export const CARGO_CONFIG = {
 	artifact: 'wasm_sha2.wasm',
 } as const;
 
+export const INITIAL_MEMORY = 1572864 as const;
+export const MAX_MEMORY = 1572864 as const;
+
 /** Every feature flag the crate understands. */
 export type Feature =
 	| 'sha224'

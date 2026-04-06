@@ -23,7 +23,7 @@ and TypeScript declarations for easy JS/TS usage.
 
 ## Features
 
-- Supported algorithms: **sha224, sha256, sha384, sha512, sha512_256**
+- Supported algorithms: **sha224, sha256, sha384, sha512, sha512_224, sha512_256**
 - Streaming and one-shot hash APIs
 - Optional serialize / deserialize of internal state (build-time feature)
 - Multiple pre-built JS/WASM bundles in ecmascript/dist and ecmascript/build

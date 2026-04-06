@@ -19,12 +19,21 @@
 // WASM function type aliases
 // ----------------------------------------------------------------
 
-type WasmInit = (ptr: number) => number;
-type WasmUpdate = (statePtr: number, dataPtr: number, dataLen: number) => void;
-type WasmFinalize = (statePtr: number, resultPtr: number) => number;
-type WasmReset = (ptr: number) => void;
-type WasmSerialize = (statePtr: number, resultPtr: number) => number;
-type WasmDeserialize = (serializedPtr: number, statePtr: number) => number;
+type WasmInit = (ctx: number, ctxSize: number) => number;
+type WasmUpdate = (ctx: number, data: number, dataSize: number) => void;
+type WasmFinalize = (ctx: number, result: number, resultSize: number) => number;
+type WasmReset = (ctx: number) => void;
+type WasmSerialize = (
+	result: number,
+	resultSize: number,
+	ctx: number,
+) => number;
+type WasmDeserialize = (
+	ctx: number,
+	ctxSize: number,
+	state: number,
+	stateSize: number,
+) => number;
 
 /* eslint-disable @typescript-eslint/naming-convention */
 interface IWasmInstance extends WebAssembly.Instance {

@@ -22,8 +22,8 @@
         size_t split = sizeof(msg) / 2; \
         uint8_t expected_md[DIGEST_LEN_BYTES]; \
         uint8_t result_md[DIGEST_LEN_BYTES]; \
-        uintptr_t sha_size = ALG_LOWER##_init(NULL); \
-        uintptr_t state_size = ALG_LOWER##_serialize(NULL, NULL); \
+        uintptr_t sha_size = ALG_LOWER##_init(NULL, 0); \
+        uintptr_t state_size = ALG_LOWER##_serialize(NULL, 0, NULL); \
         ALG_UPPER *sha_state = malloc(sha_size); \
         ALG_UPPER *restored_state = malloc(sha_size); \
         ALG_STATE *serialized_state = malloc(state_size); \
@@ -31,13 +31,13 @@
         assert_non_null(sha_state); \
         assert_non_null(restored_state); \
         assert_non_null(serialized_state); \
-        ALG_LOWER##_digest(msg, sizeof(msg) - 1, expected_md); \
-        assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
+        ALG_LOWER##_digest(expected_md, DIGEST_LEN_BYTES, msg, sizeof(msg) - 1); \
+        assert_int_equal(ALG_LOWER##_init(sha_state, sha_size), sha_size); \
         ALG_LOWER##_update(sha_state, msg, split); \
-        assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_serialize(serialized_state, state_size, sha_state), state_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(restored_state, sha_size, serialized_state, state_size), sha_size); \
         ALG_LOWER##_update(restored_state, msg + split, (sizeof(msg) - 1) - split); \
-        assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md), DIGEST_LEN_BYTES); \
+        assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
         assert_memory_equal(result_md, expected_md, DIGEST_LEN_BYTES); \
         free(serialized_state); \
         free(restored_state); \
@@ -48,8 +48,8 @@
     { \
         uint8_t expected_md[DIGEST_LEN_BYTES]; \
         uint8_t result_md[DIGEST_LEN_BYTES]; \
-        uintptr_t sha_size = ALG_LOWER##_init(NULL); \
-        uintptr_t state_size = ALG_LOWER##_serialize(NULL, NULL); \
+        uintptr_t sha_size = ALG_LOWER##_init(NULL, 0); \
+        uintptr_t state_size = ALG_LOWER##_serialize(NULL, 0, NULL); \
         ALG_UPPER *sha_state = malloc(sha_size); \
         ALG_UPPER *expected_state = malloc(sha_size); \
         ALG_UPPER *restored_state = malloc(sha_size); \
@@ -59,12 +59,12 @@
         assert_non_null(expected_state); \
         assert_non_null(restored_state); \
         assert_non_null(serialized_state); \
-        assert_int_equal(ALG_LOWER##_init(expected_state), sha_size); \
-        assert_int_equal(ALG_LOWER##_finalize(expected_state, expected_md), DIGEST_LEN_BYTES); \
-        assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
-        assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
-        assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md), DIGEST_LEN_BYTES); \
+        assert_int_equal(ALG_LOWER##_init(expected_state, sha_size), sha_size); \
+        assert_int_equal(ALG_LOWER##_finalize(expected_state, expected_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
+        assert_int_equal(ALG_LOWER##_init(sha_state, sha_size), sha_size); \
+        assert_int_equal(ALG_LOWER##_serialize(serialized_state, state_size, sha_state), state_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(restored_state, sha_size, serialized_state, state_size), sha_size); \
+        assert_int_equal(ALG_LOWER##_finalize(restored_state, result_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
         assert_memory_equal(result_md, expected_md, DIGEST_LEN_BYTES); \
         free(serialized_state); \
         free(restored_state); \
@@ -81,8 +81,8 @@
         uint8_t expected_restored_md[DIGEST_LEN_BYTES]; \
         uint8_t original_md[DIGEST_LEN_BYTES]; \
         uint8_t restored_md[DIGEST_LEN_BYTES]; \
-        uintptr_t sha_size = ALG_LOWER##_init(NULL); \
-        uintptr_t state_size = ALG_LOWER##_serialize(NULL, NULL); \
+        uintptr_t sha_size = ALG_LOWER##_init(NULL, 0); \
+        uintptr_t state_size = ALG_LOWER##_serialize(NULL, 0, NULL); \
         ALG_UPPER *sha_state = malloc(sha_size); \
         ALG_UPPER *restored_state = malloc(sha_size); \
         ALG_STATE *serialized_state = malloc(state_size); \
@@ -90,32 +90,32 @@
         assert_non_null(sha_state); \
         assert_non_null(restored_state); \
         assert_non_null(serialized_state); \
-        assert_int_equal(ALG_LOWER##_init(sha_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_init(sha_state, sha_size), sha_size); \
         ALG_LOWER##_update(sha_state, prefix, sizeof(prefix) - 1); \
-        assert_int_equal(ALG_LOWER##_serialize(sha_state, serialized_state), state_size); \
-        assert_int_equal(ALG_LOWER##_deserialize(serialized_state, state_size, restored_state), sha_size); \
+        assert_int_equal(ALG_LOWER##_serialize(serialized_state, state_size, sha_state), state_size); \
+        assert_int_equal(ALG_LOWER##_deserialize(restored_state, sha_size, serialized_state, state_size), sha_size); \
         ALG_LOWER##_update(sha_state, original_suffix, sizeof(original_suffix) - 1); \
         ALG_LOWER##_update(restored_state, restored_suffix, sizeof(restored_suffix) - 1); \
-        assert_int_equal(ALG_LOWER##_finalize(sha_state, original_md), DIGEST_LEN_BYTES); \
-        assert_int_equal(ALG_LOWER##_finalize(restored_state, restored_md), DIGEST_LEN_BYTES); \
+        assert_int_equal(ALG_LOWER##_finalize(sha_state, original_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
+        assert_int_equal(ALG_LOWER##_finalize(restored_state, restored_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
         { \
-            uintptr_t verify_size = ALG_LOWER##_init(NULL); \
+            uintptr_t verify_size = ALG_LOWER##_init(NULL, 0); \
             ALG_UPPER *verify_state = malloc(verify_size); \
             assert_non_null(verify_state); \
-            assert_int_equal(ALG_LOWER##_init(verify_state), verify_size); \
+            assert_int_equal(ALG_LOWER##_init(verify_state, verify_size), verify_size); \
             ALG_LOWER##_update(verify_state, prefix, sizeof(prefix) - 1); \
             ALG_LOWER##_update(verify_state, original_suffix, sizeof(original_suffix) - 1); \
-            assert_int_equal(ALG_LOWER##_finalize(verify_state, expected_original_md), DIGEST_LEN_BYTES); \
+            assert_int_equal(ALG_LOWER##_finalize(verify_state, expected_original_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
             free(verify_state); \
         } \
         { \
-            uintptr_t verify_size = ALG_LOWER##_init(NULL); \
+            uintptr_t verify_size = ALG_LOWER##_init(NULL, 0); \
             ALG_UPPER *verify_state = malloc(verify_size); \
             assert_non_null(verify_state); \
-            assert_int_equal(ALG_LOWER##_init(verify_state), verify_size); \
+            assert_int_equal(ALG_LOWER##_init(verify_state, verify_size), verify_size); \
             ALG_LOWER##_update(verify_state, prefix, sizeof(prefix) - 1); \
             ALG_LOWER##_update(verify_state, restored_suffix, sizeof(restored_suffix) - 1); \
-            assert_int_equal(ALG_LOWER##_finalize(verify_state, expected_restored_md), DIGEST_LEN_BYTES); \
+            assert_int_equal(ALG_LOWER##_finalize(verify_state, expected_restored_md, DIGEST_LEN_BYTES), DIGEST_LEN_BYTES); \
             free(verify_state); \
         } \
         assert_memory_equal(original_md, expected_original_md, DIGEST_LEN_BYTES); \

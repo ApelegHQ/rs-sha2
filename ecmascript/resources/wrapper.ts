@@ -300,7 +300,7 @@ function initFactory$(
 				// does not overlap with the state region at alignedHeapBase.
 				var statePtr = heap.byteLength - serializedData.byteLength;
 
-				var requiredSize = init(0);
+				var requiredSize = init(0, 0);
 				// The output state is written at:
 				//   [alignedHeapBase, alignedHeapBase + N)
 				// Ensure the input region [statePtr, requiredSize) cannot
@@ -328,13 +328,14 @@ function initFactory$(
 				try {
 					/** Byte-size of the restored state (0 = failure). */
 					var size = deserialize(
+						alignedHeapBase,
+						statePtr - alignedHeapBase,
 						statePtr,
 						serializedDataU8.byteLength,
-						alignedHeapBase,
 					);
 
-					if (!size) {
-						throw new Error('Unable to deserialize');
+					if (size === 0) {
+						throw new RangeError('Unable to deserialize');
 					}
 
 					var s = slice(heap, alignedHeapBase, size);
@@ -351,7 +352,13 @@ function initFactory$(
 				}
 			} else {
 				// --- Fresh initialisation path ---
-				var size = init(alignedHeapBase);
+				var size = init(
+					alignedHeapBase,
+					heap.byteLength - alignedHeapBase,
+				);
+				if (import.meta.runtimeHeapSizeAssertions && !size) {
+					throw new RangeError('Unable to create instance');
+				}
 				var s = slice(heap, alignedHeapBase, size);
 
 				return s;
@@ -401,7 +408,7 @@ function initFactory$(
 			heap.set(s, alignedHeapBase);
 			try {
 				var r = cb();
-				// Copy (potentially mutated) state back from WASM heap � local.
+				// Copy (potentially mutated) state back from WASM heap -> local.
 				s.set(heap.subarray(alignedHeapBase, alignedHeapBase + sSize));
 
 				return r;
@@ -450,6 +457,9 @@ function initFactory$(
 				 * processed in multiple iterations.
 				 */
 				var diff = data_max - data_ptr;
+				if (import.meta.runtimeHeapSizeAssertions && diff <= 0) {
+					throw new RangeError('Insufficient heap space');
+				}
 
 				// Normalise data to a plain Uint8Array.
 				var dataU8: Uint8Array;
@@ -503,7 +513,14 @@ function initFactory$(
 				var result_ptr = align128(alignedHeapBase + sSize);
 
 				/** Digest size in bytes as reported by the WASM export. */
-				var size = finalize(alignedHeapBase, result_ptr);
+				var size = finalize(
+					alignedHeapBase,
+					result_ptr,
+					heap.byteLength - result_ptr,
+				);
+				if (import.meta.runtimeHeapSizeAssertions && size === 0) {
+					throw new RangeError('Unable to finalize');
+				}
 
 				/** A copy of the digest bytes. */
 				var r = slice(heap, result_ptr, size);
@@ -587,7 +604,14 @@ function initFactory$(
 				var result_ptr = align128(alignedHeapBase + sSize);
 
 				/** Serialised size in bytes. */
-				var size = serialize(alignedHeapBase, result_ptr);
+				var size = serialize(
+					result_ptr,
+					heap.byteLength - result_ptr,
+					alignedHeapBase,
+				);
+				if (import.meta.runtimeHeapSizeAssertions && size === 0) {
+					throw new RangeError('Unable to serialize');
+				}
 
 				/** A copy of the serialised bytes. */
 				var r = slice(heap, result_ptr, size);
@@ -678,9 +702,10 @@ function sha2(): Promise<Sha2Result> {
 					exports.__heap_base;
 
 		if (
-			typeof heapBase !== 'number' ||
-			!Number.isSafeInteger(heapBase) ||
-			heapBase < 0
+			import.meta.runtimeHeapSizeAssertions &&
+			(typeof heapBase !== 'number' ||
+				!Number.isSafeInteger(heapBase) ||
+				heapBase < 0)
 		) {
 			throw new TypeError('Unable to determine the heap base');
 		}
@@ -690,6 +715,12 @@ function sha2(): Promise<Sha2Result> {
 		 * dynamic allocations start here.
 		 */
 		var alignedHeapBase = align128(heapBase);
+		if (
+			import.meta.runtimeHeapSizeAssertions &&
+			alignedHeapBase >= heap.byteLength
+		) {
+			throw new RangeError('Insufficient heap space');
+		}
 
 		/** The returned object mapping algorithm names -> factory functions. */
 		var result: Sha2Result = Object.create(null);

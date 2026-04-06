@@ -31,4 +31,6 @@ interface ImportMeta {
 		readonly serialize: boolean;
 		readonly deserialize: boolean;
 	};
+	// Include assertions checked at build-time
+	runtimeHeapSizeAssertions: boolean;
 }
